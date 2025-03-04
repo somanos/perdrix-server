@@ -1,0 +1,8 @@
+DROP TABLE IF EXISTS bank;
+CREATE TABLE
+  bank (
+    id INTEGER UNSIGNED AUTO_INCREMENT,
+    tag VARCHAR(200),
+    PRIMARY KEY (`id`),
+    UNIQUE KEY (`tag`)
+  );

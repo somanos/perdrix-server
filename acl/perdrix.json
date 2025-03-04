@@ -1,0 +1,34 @@
+{
+  "services": {
+    "list_client": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
+    },
+    "search": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
+    },
+    "get_env": {
+      "scope": "hub",
+      "permission": {
+        "src": "anyone",
+        "fast_check": "public-api"
+      }
+    },
+    "remove": {
+      "scope": "hub",
+      "permission": {
+        "src": "anyone",
+        "fast_check": "public-api"
+      }
+    }
+  },
+  "modules": {
+    "private": "service/index",
+    "public": "service/index"
+  }
+}

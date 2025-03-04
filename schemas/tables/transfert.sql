@@ -1,0 +1,10 @@
+DROP TABLE IF EXISTS transfert;
+CREATE TABLE
+  transfert (
+    id INTEGER UNSIGNED AUTO_INCREMENT,
+    TransfertNum VARCHAR(200),
+    srcId INTEGER UNSIGNED,
+    destId INTEGER UNSIGNED,
+    ctime INTEGER (11) UNSIGNED,
+    PRIMARY KEY (`id`)
+  );

@@ -1,0 +1,8 @@
+DROP TABLE IF EXISTS typeSoc;
+CREATE TABLE
+  typeSoc (
+    id INTEGER UNSIGNED AUTO_INCREMENT,
+    tag VARCHAR(200),
+    PRIMARY KEY (`id`),
+    UNIQUE KEY (`tag`)
+  );
