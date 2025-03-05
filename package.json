@@ -20,14 +20,14 @@
   "author": "Somanos Sar <somanos@drumee.com>",
   "license": "Apache V2",
   "dependencies": {
-    "@drumee/server-core": "^1.1.9",
-    "@drumee/server-essentials": "^1.1.21",
+    "@drumee/server-core": "^1.1.10",
+    "@drumee/server-essentials": "^1.1.22",
     "codes-postaux": "^4.1.2",
     "lodash": "^4.17.21",
     "unique-names-generator": "^4.7.1"
   },
   "devDependencies": {
-    "@drumee/server-dev-tools": "^1.1.0",
+    "@drumee/server-dev-tools": "^1.1.15",
     "minimist": "^1.2.8"
   }
 }

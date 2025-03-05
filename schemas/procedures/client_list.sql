@@ -38,6 +38,8 @@ BEGIN
     LEFT JOIN typeVoie v ON c.codeVoie = v.id
 
   ORDER BY 
+    CASE WHEN LCASE(_sort_by) = 'id' and LCASE(_order) = 'asc' THEN nom END ASC,
+    CASE WHEN LCASE(_sort_by) = 'id' and LCASE(_order) = 'desc' THEN nom END DESC,
     CASE WHEN LCASE(_sort_by) = 'nom' and LCASE(_order) = 'asc' THEN nom END ASC,
     CASE WHEN LCASE(_sort_by) = 'nom' and LCASE(_order) = 'desc' THEN nom END DESC,
     CASE WHEN LCASE(_sort_by) = 'prenom' and LCASE(_order) = 'asc' THEN prenom END ASC,
