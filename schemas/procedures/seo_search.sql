@@ -3,7 +3,8 @@ DELIMITER $
 
 DROP PROCEDURE IF EXISTS `seo_search`$
 CREATE PROCEDURE `seo_search`(
-  IN _args JSON
+  IN _args JSON,
+  IN _tables JSON
 )
 BEGIN
   DECLARE _key TEXT;
@@ -12,7 +13,6 @@ BEGIN
   DECLARE _sort_by VARCHAR(20) DEFAULT 'nom';
   DECLARE _words TEXT;
   DECLARE _order VARCHAR(20) DEFAULT 'asc';
-  DECLARE _tables VARCHAR(60) DEFAULT ':client:';
   DECLARE _page INTEGER DEFAULT 1;
 
   DROP TABLE IF EXISTS _results;
@@ -26,7 +26,6 @@ BEGIN
   SELECT IFNULL(JSON_VALUE(_args, "$.sort_by"), 'nom') INTO _sort_by;
   SELECT IFNULL(JSON_VALUE(_args, "$.order"), 'asc') INTO _order;
   SELECT IFNULL(JSON_VALUE(_args, "$.page"), 1) INTO _page;
-  SELECT IFNULL(JSON_VALUE(_args, "$.tables"), ':client:') INTO _tables;
   SELECT IFNULL(JSON_VALUE(_args, "$.words"), "") INTO _words;
 
   CALL yp.pageToLimits(_page, _offset, _range);
@@ -40,22 +39,30 @@ BEGIN
 
   DROP TABLE IF EXISTS _view;
   CREATE TEMPORARY TABLE _view(
-    id INTEGER UNSIGNED,
+    itemId INTEGER UNSIGNED,
     word VARCHAR(512),
     relevance DOUBLE DEFAULT 0,
     ctype VARCHAR(16),
     content JSON,
-    ctime INT(11) UNSIGNED
+    ctime INT(11) UNSIGNED,
+    PRIMARY KEY (itemId, ctype)
   );
 
-  IF (_tables REGEXP ":chantier:|:all:") THEN
-    INSERT INTO _view SELECT 
+  DROP TABLE IF EXISTS _types;
+  CREATE TEMPORARY TABLE _types(
+    ctype VARCHAR(32)
+  );
+  SELECT _tables INTO @_tables;
+
+  IF _tables IS NULL OR json_array_contains(_tables, "chantier") THEN
+    REPLACE INTO _view SELECT 
       c.id, 
       r.word,
       r.relevance,
       'chantier',
       JSON_OBJECT(
         'clientId', cl.id,
+        'civilite', ci.shortTag,
         'nomClient', IF(cl.societe !='', cl.societe, CONCAT(cl.nom, IF(cl.prenom != '', CONCAT(' ', cl.prenom), ''))),
         'numVoie', c.numVoie,
         'typeVoie', v.shortTag,
@@ -68,18 +75,21 @@ BEGIN
         INNER JOIN seo_object o USING(id) 
         INNER JOIN client cl ON cl.id=c.clientId AND c.id=o.id
         INNER JOIN _results r USING(ref_id) 
+        LEFT JOIN civilite ci ON ci.id=cl.genre
         LEFT JOIN localite l ON c.codePostal=l.codePostal
-        LEFT JOIN typeVoie v ON c.codeVoie=v.id;
+        LEFT JOIN typeVoie v ON c.codeVoie=v.id
+        WHERE o.table = 'chantier';
   END IF;
 
-  IF (_tables REGEXP ":client:|:all:") THEN
-    INSERT INTO _view SELECT 
+  IF _tables IS NULL OR json_array_contains(_tables, "client") THEN
+    REPLACE INTO _view SELECT 
       c.id, 
       r.word,
       r.relevance,
       'client',
       JSON_OBJECT(
         'nom', IF(c.societe !='', c.societe, CONCAT(c.nom, IF(c.prenom != '', CONCAT(' ', c.prenom), ''))),
+        'civilite', ci.shortTag,
         'numVoie', c.numVoie,
         'typeVoie', v.shortTag,
         'nomVoie', c.nomVoie,
@@ -91,11 +101,13 @@ BEGIN
         INNER JOIN seo_object o USING(id) 
         INNER JOIN _results r USING(ref_id) 
         LEFT JOIN localite l ON c.codePostal=l.codePostal
-        LEFT JOIN typeVoie v ON c.codeVoie=v.id;
+        LEFT JOIN civilite ci ON ci.id=c.genre
+        LEFT JOIN typeVoie v ON c.codeVoie=v.id
+        WHERE o.table = 'client';
   END IF;
 
-  IF (_tables REGEXP ":contactChantier:|:all:") THEN
-    INSERT INTO _view SELECT 
+  IF _tables IS NULL OR json_array_contains(_tables, "contactChantier") THEN
+    REPLACE INTO _view SELECT 
       c.id, 
       r.word,
       r.relevance,
@@ -111,14 +123,51 @@ BEGIN
         'telBureau', c.telBureau,
         'telDom', c.telDom,
         'mobile', c.mobile,
+        'email', c.email,
         'fax', c.fax
       ) content,
       c.ctime
       FROM contactChantier c 
         INNER JOIN seo_object o USING(id) 
-        INNER JOIN civilite ci ON ci.id=c.civilite
+        LEFT JOIN civilite ci ON ci.id=c.civilite
         INNER JOIN client cl ON cl.id=c.clientId AND c.id=o.id
-        INNER JOIN _results r USING(ref_id);
+        INNER JOIN _results r USING(ref_id)
+        WHERE o.table = 'contactChantier';
+  END IF;
+
+  IF _tables IS NULL OR json_array_contains(_tables, "travaux") THEN
+    REPLACE INTO _view SELECT 
+      t.id, 
+      r.word,
+      r.relevance,
+      'travaux',
+      JSON_OBJECT(
+        'nomClient', IF(cl.societe !='', cl.societe, CONCAT(cl.nom, IF(cl.prenom != '', CONCAT(' ', cl.prenom), ''))),
+        'type', 'travaux',
+        'typeTravail', tt.tag,
+        'civilite', ci.shortTag,
+        'clientId', cl.id,
+        'devisId', d.id,
+        'chrono', d.chrono,
+        'description', t.description,
+        'ht', d.ht,
+        'taux_tva', d.tva,
+        'val_tva', d.ttc-d.ht,
+        'ttc', d.ttc,
+        'remis', d.remis,
+        'remis', d.folderId,
+        'ctime', d.ctime,
+        'statut', d.statut
+      ) content,
+      d.ctime
+      FROM travaux t 
+        INNER JOIN seo_object o USING(id) 
+        INNER JOIN _results r USING(ref_id)
+        INNER JOIN devis d ON t.id=d.travauxId AND t.clientId=d.clientId
+        INNER JOIN typeTravaux tt ON t.categorie=tt.id
+        INNER JOIN client cl ON cl.id=t.clientId AND t.clientId=d.clientId
+        LEFT JOIN civilite ci ON ci.id=cl.genre
+        WHERE o.table = 'travaux';
   END IF;
 
   SELECT * FROM _view ORDER BY relevance LIMIT _offset ,_range;

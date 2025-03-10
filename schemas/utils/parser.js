@@ -40,7 +40,7 @@ function createTable(colunms, src, dest) {
   closeSync(fd)
 }
 
-/***
+/***  
  * 
  */
 function parseTable(row, sql, types) {
@@ -49,8 +49,12 @@ function parseTable(row, sql, types) {
     sql = `${sql} ?,`;
     if (/^int/.test(types[i])) {
       if (/\(11\)/.test(types[i])) {
-        let t = row[i] || '2000-01-01'
-        row[i] = new Date(t).getTime() / 1000;
+        let t = row[i] || '2000-01-01';
+        if(/[0-9]{4,4}\-[0-9]{2,2}\-[0-9]{2,2}/.test(t)){
+          row[i] = new Date(t).getTime() / 1000;
+        }else{
+          row[i] = new Date('2000-01-01').getTime() / 1000;
+        }
         if(row[i]<0){
           row[i] = 0;
         }

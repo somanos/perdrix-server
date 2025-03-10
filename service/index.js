@@ -24,16 +24,17 @@ class Perdrix extends Entity {
     * 
   */
   async search() {
-    const words = this.input.get('words') || 'nom';
-    let tables = this.input.get('tables') || ':all:';
+    let words = this.input.get('words') || 'nom';
+    let tables = this.input.get('tables');
     const page = this.input.get(Attr.page);
     if (!page) page = 1;
-    if (/^ch/i.test(tables)) tables = `:chantier:`;
-    if (/^cc/i.test(tables)) tables = `:${tables}:contactChantier:`;
-    if (/^cl/i.test(tables)) tables = `:${tables}:client:`;
-    tables = tables.replace(/:+/, ':');
-    let data = await Db.await_proc('seo_search', { tables, words, page });
-    this.debug("AAA:18", data, { tables, words, page })
+    if (/^.+[\.!]$/.test(words)) {
+      words = words.replace(/[\.!]$/, '');
+    } else {
+      if (!/^.+\*$/.test(words)) words = words + "*";
+    }
+    let data = await Db.await_proc('seo_search', { words, page }, tables);
+    this.debug("AAA:37", data, JSON.stringify({ tables, words, page }))
     this.output.list(data);
   }
 
