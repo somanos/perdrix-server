@@ -63,7 +63,8 @@ BEGIN
       JSON_OBJECT(
         'clientId', cl.id,
         'civilite', ci.shortTag,
-        'nomClient', IF(cl.societe !='', cl.societe, CONCAT(cl.nom, IF(cl.prenom != '', CONCAT(' ', cl.prenom), ''))),
+        'stype', ts.tag,
+        'nomClient', IF(cl.categorie=0, cl.societe, CONCAT(cl.nom, IF(cl.prenom != '', CONCAT(' ', cl.prenom), ''))),
         'numVoie', c.numVoie,
         'typeVoie', v.shortTag,
         'nomVoie', c.nomVoie,
@@ -76,6 +77,7 @@ BEGIN
         INNER JOIN client cl ON cl.id=c.clientId AND c.id=o.id
         INNER JOIN _results r USING(ref_id) 
         LEFT JOIN civilite ci ON ci.id=cl.genre
+        LEFT JOIN typeSoc ts ON cl.type = ts.id
         LEFT JOIN localite l ON c.codePostal=l.codePostal
         LEFT JOIN typeVoie v ON c.codeVoie=v.id
         WHERE o.table = 'chantier';
@@ -88,7 +90,9 @@ BEGIN
       r.relevance,
       'client',
       JSON_OBJECT(
-        'nom', IF(c.societe !='', c.societe, CONCAT(c.nom, IF(c.prenom != '', CONCAT(' ', c.prenom), ''))),
+        'id', c.id,
+        'nom', IF(c.categorie=0, c.societe, CONCAT(c.nom, IF(c.prenom != '', CONCAT(' ', c.prenom), ''))),
+        'stype', ts.tag,
         'civilite', ci.shortTag,
         'numVoie', c.numVoie,
         'typeVoie', v.shortTag,
@@ -100,6 +104,7 @@ BEGIN
       FROM client c 
         INNER JOIN seo_object o USING(id) 
         INNER JOIN _results r USING(ref_id) 
+        LEFT JOIN typeSoc ts ON c.type = ts.id
         LEFT JOIN localite l ON c.codePostal=l.codePostal
         LEFT JOIN civilite ci ON ci.id=c.genre
         LEFT JOIN typeVoie v ON c.codeVoie=v.id
@@ -113,8 +118,9 @@ BEGIN
       r.relevance,
       'contactChantier',
       JSON_OBJECT(
-        'nomClient', IF(cl.societe !='', cl.societe, CONCAT(cl.nom, IF(cl.prenom != '', CONCAT(' ', cl.prenom), ''))),
+        'nomClient', IF(cl.categorie=0, cl.societe, CONCAT(cl.nom, IF(cl.prenom != '', CONCAT(' ', cl.prenom), ''))),
         'type', 'contactChantier',
+        'stype', ts.tag,
         'categorie', c.categorie,
         'civilite', ci.shortTag,
         'clientId', cl.id,
@@ -129,9 +135,10 @@ BEGIN
       c.ctime
       FROM contactChantier c 
         INNER JOIN seo_object o USING(id) 
-        LEFT JOIN civilite ci ON ci.id=c.civilite
         INNER JOIN client cl ON cl.id=c.clientId AND c.id=o.id
         INNER JOIN _results r USING(ref_id)
+        LEFT JOIN civilite ci ON ci.id=c.civilite
+        LEFT JOIN typeSoc ts ON cl.type = ts.id
         WHERE o.table = 'contactChantier';
   END IF;
 
@@ -142,8 +149,9 @@ BEGIN
       r.relevance,
       'travaux',
       JSON_OBJECT(
-        'nomClient', IF(cl.societe !='', cl.societe, CONCAT(cl.nom, IF(cl.prenom != '', CONCAT(' ', cl.prenom), ''))),
+        'nomClient', IF(cl.categorie=0, cl.societe, CONCAT(cl.nom, IF(cl.prenom != '', CONCAT(' ', cl.prenom), ''))),
         'type', 'travaux',
+        'stype', ts.tag,
         'typeTravail', tt.tag,
         'civilite', ci.shortTag,
         'clientId', cl.id,
@@ -167,10 +175,11 @@ BEGIN
         INNER JOIN typeTravaux tt ON t.categorie=tt.id
         INNER JOIN client cl ON cl.id=t.clientId AND t.clientId=d.clientId
         LEFT JOIN civilite ci ON ci.id=cl.genre
+        LEFT JOIN typeSoc ts ON cl.type = ts.id
         WHERE o.table = 'travaux';
   END IF;
 
-  SELECT * FROM _view ORDER BY relevance LIMIT _offset ,_range;
+  SELECT *, ctype `type` FROM _view ORDER BY relevance LIMIT _offset ,_range;
 END$
 
 DELIMITER ;

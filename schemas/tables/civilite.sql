@@ -2,6 +2,6 @@ DROP TABLE IF EXISTS civilite;
 CREATE TABLE civilite (
   id INTEGER UNSIGNED AUTO_INCREMENT,
   shortTag VARCHAR(10), 
-  logTag VARCHAR(50),
+  longTag VARCHAR(50),
   PRIMARY KEY (`id`)
 );

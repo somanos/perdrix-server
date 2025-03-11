@@ -10,12 +10,12 @@ class Perdrix extends Entity {
   /**
    * 
    */
-  async list_client() {
+  async client_list() {
     const sort_by = this.input.get(Attr.sort_by) || 'nom';
     const order = this.input.get(Attr.order) || 'asc';
     const page = this.input.get(Attr.page);
-    let data = await Db.await_proc('client_list', { sort_by, order, page });
-    this.debug("AAA:18", data)
+    let words = this.input.get('words') || '.++';
+    let data = await Db.await_proc('client_list', { words, sort_by, order, page });
     this.output.data(data);
   }
 
@@ -34,7 +34,6 @@ class Perdrix extends Entity {
       if (!/^.+\*$/.test(words)) words = words + "*";
     }
     let data = await Db.await_proc('seo_search', { words, page }, tables);
-    this.debug("AAA:37", data, JSON.stringify({ tables, words, page }))
     this.output.list(data);
   }
 

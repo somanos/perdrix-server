@@ -1,6 +1,6 @@
 {
   "services": {
-    "list_client": {
+    "client_list": {
       "scope": "hub",
       "permission": {
         "src": "read"
