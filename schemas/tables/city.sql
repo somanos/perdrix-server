@@ -1,0 +1,8 @@
+DROP TABLE IF EXISTS city;
+CREATE TABLE
+  city (
+    id INTEGER UNSIGNED AUTO_INCREMENT,
+    postcode INTEGER UNSIGNED,
+    `name` TEXT,
+    PRIMARY KEY (`id`)
+  );

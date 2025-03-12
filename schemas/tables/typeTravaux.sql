@@ -1,6 +1,6 @@
-DROP TABLE IF EXISTS typeTravaux;
+DROP TABLE IF EXISTS workType;
 CREATE TABLE
-  typeTravaux (
+  workType (
     id INTEGER UNSIGNED AUTO_INCREMENT,
     tag VARCHAR(200),
     PRIMARY KEY (`id`),

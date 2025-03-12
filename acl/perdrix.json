@@ -1,12 +1,18 @@
 {
   "services": {
-    "client_list": {
+    "customer_list": {
       "scope": "hub",
       "permission": {
         "src": "read"
       }
     },
     "search": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
+    },
+    "search_address": {
       "scope": "hub",
       "permission": {
         "src": "read"

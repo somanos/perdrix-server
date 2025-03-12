@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS client;
+
 CREATE TABLE
   client (
     `id` int (10) unsigned NOT NULL AUTO_INCREMENT,

@@ -10,7 +10,7 @@ BEGIN
   DECLARE _key TEXT;
   DECLARE _offset INTEGER UNSIGNED;
   DECLARE _range INTEGER UNSIGNED;
-  DECLARE _sort_by VARCHAR(20) DEFAULT 'nom';
+  DECLARE _sort_by VARCHAR(20) DEFAULT 'lastname';
   DECLARE _words TEXT;
   DECLARE _order VARCHAR(20) DEFAULT 'asc';
   DECLARE _page INTEGER DEFAULT 1;
@@ -19,11 +19,11 @@ BEGIN
   CREATE TEMPORARY TABLE _results(
     `ikey` text DEFAULT NULL,
     `ref_id` varchar(64) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
-    `word` varchar(300) NOT NULL,
+    `word` TEXT NOT NULL,
     `relevance` double DEFAULT 0
   );
 
-  SELECT IFNULL(JSON_VALUE(_args, "$.sort_by"), 'nom') INTO _sort_by;
+  SELECT IFNULL(JSON_VALUE(_args, "$.sort_by"), 'lastname') INTO _sort_by;
   SELECT IFNULL(JSON_VALUE(_args, "$.order"), 'asc') INTO _order;
   SELECT IFNULL(JSON_VALUE(_args, "$.page"), 1) INTO _page;
   SELECT IFNULL(JSON_VALUE(_args, "$.words"), "") INTO _words;
@@ -40,7 +40,7 @@ BEGIN
   DROP TABLE IF EXISTS _view;
   CREATE TEMPORARY TABLE _view(
     itemId INTEGER UNSIGNED,
-    word VARCHAR(512),
+    word TEXT,
     relevance DOUBLE DEFAULT 0,
     ctype VARCHAR(16),
     content JSON,
@@ -50,133 +50,119 @@ BEGIN
 
   DROP TABLE IF EXISTS _types;
   CREATE TEMPORARY TABLE _types(
-    ctype VARCHAR(32)
+    compType VARCHAR(32)
   );
-  SELECT _tables INTO @_tables;
 
-  IF _tables IS NULL OR json_array_contains(_tables, "chantier") THEN
+  IF _tables IS NULL OR json_array_contains(_tables, "site") THEN
     REPLACE INTO _view SELECT 
       c.id, 
       r.word,
       r.relevance,
-      'chantier',
+      'site',
       JSON_OBJECT(
-        'clientId', cl.id,
-        'civilite', ci.shortTag,
-        'stype', ts.tag,
-        'nomClient', IF(cl.categorie=0, cl.societe, CONCAT(cl.nom, IF(cl.prenom != '', CONCAT(' ', cl.prenom), ''))),
-        'numVoie', c.numVoie,
-        'typeVoie', v.shortTag,
-        'nomVoie', c.nomVoie,
-        'localite', IF(l.designation !='', l.designation, c.codePostal),
-        'codepostal', IF(l.designation !='', l.codePostal, '')
+        'custId', c.id,
+        'gender', g.shortTag,
+        'compType', cc.tag,
+        'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
+        'location', s.location,
+        'city', s.city,
+        'postcode', s.postcode
       ) content,
       c.ctime
-      FROM chantier c 
+      FROM `site` s 
         INNER JOIN seo_object o USING(id) 
-        INNER JOIN client cl ON cl.id=c.clientId AND c.id=o.id
+        INNER JOIN customer c ON c.id=s.custId AND s.id=o.id
         INNER JOIN _results r USING(ref_id) 
-        LEFT JOIN civilite ci ON ci.id=cl.genre
-        LEFT JOIN typeSoc ts ON cl.type = ts.id
-        LEFT JOIN localite l ON c.codePostal=l.codePostal
-        LEFT JOIN typeVoie v ON c.codeVoie=v.id
-        WHERE o.table = 'chantier';
+        LEFT JOIN gender g ON g.id=c.gender
+        LEFT JOIN companyClass cc ON c.type = cc.id
+        WHERE o.table = 'site';
   END IF;
 
-  IF _tables IS NULL OR json_array_contains(_tables, "client") THEN
+  IF _tables IS NULL OR json_array_contains(_tables, "customer") THEN
     REPLACE INTO _view SELECT 
       c.id, 
       r.word,
       r.relevance,
-      'client',
+      'customer',
       JSON_OBJECT(
         'id', c.id,
-        'nom', IF(c.categorie=0, c.societe, CONCAT(c.nom, IF(c.prenom != '', CONCAT(' ', c.prenom), ''))),
-        'stype', ts.tag,
-        'civilite', ci.shortTag,
-        'numVoie', c.numVoie,
-        'typeVoie', v.shortTag,
-        'nomVoie', c.nomVoie,
-        'localite', IF(l.designation !='', l.designation, c.codePostal),
-        'codepostal', IF(l.designation !='', l.codePostal, '')
+        'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
+        'compType', cc.tag,
+        'gender', g.shortTag,
+        'location', c.location,
+        'city', c.city,
+        'postcode', c.postcode
       ) content,
       c.ctime
-      FROM client c 
+      FROM customer c 
         INNER JOIN seo_object o USING(id) 
         INNER JOIN _results r USING(ref_id) 
-        LEFT JOIN typeSoc ts ON c.type = ts.id
-        LEFT JOIN localite l ON c.codePostal=l.codePostal
-        LEFT JOIN civilite ci ON ci.id=c.genre
-        LEFT JOIN typeVoie v ON c.codeVoie=v.id
-        WHERE o.table = 'client';
+        LEFT JOIN companyClass cc ON c.type = cc.id
+        LEFT JOIN gender g ON g.id=c.gender
+        WHERE o.table = 'customer';
   END IF;
 
-  IF _tables IS NULL OR json_array_contains(_tables, "contactChantier") THEN
+  IF _tables IS NULL OR json_array_contains(_tables, "poc") THEN
     REPLACE INTO _view SELECT 
       c.id, 
       r.word,
       r.relevance,
-      'contactChantier',
+      'poc',
       JSON_OBJECT(
-        'nomClient', IF(cl.categorie=0, cl.societe, CONCAT(cl.nom, IF(cl.prenom != '', CONCAT(' ', cl.prenom), ''))),
-        'type', 'contactChantier',
-        'stype', ts.tag,
-        'categorie', c.categorie,
-        'civilite', ci.shortTag,
-        'clientId', cl.id,
-        'chantierId', chantierId,
-        'nom', CONCAT(c.nom, IF(c.prenom != '', CONCAT(' ', c.prenom), '')),
-        'telBureau', c.telBureau,
-        'telDom', c.telDom,
-        'mobile', c.mobile,
-        'email', c.email,
-        'fax', c.fax
+        'custId', c.id,
+        'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
+        'compType', cc.tag,
+        'category', c.category,
+        'pocGender', g.shortTag,
+        'siteId', p.siteId,
+        'pocName', CONCAT(p.lastname, IF(p.firstname != '', CONCAT(' ', p.firstname), '')),
+        'email', p.email,
+        'phones', p.phones
       ) content,
       c.ctime
-      FROM contactChantier c 
+      FROM poc p
         INNER JOIN seo_object o USING(id) 
-        INNER JOIN client cl ON cl.id=c.clientId AND c.id=o.id
+        INNER JOIN customer c ON c.id=p.custId AND p.id=o.id
         INNER JOIN _results r USING(ref_id)
-        LEFT JOIN civilite ci ON ci.id=c.civilite
-        LEFT JOIN typeSoc ts ON cl.type = ts.id
-        WHERE o.table = 'contactChantier';
+        LEFT JOIN gender g ON g.id=p.gender
+        LEFT JOIN companyClass cc ON c.type = cc.id
+        WHERE o.table = 'poc';
   END IF;
 
-  IF _tables IS NULL OR json_array_contains(_tables, "travaux") THEN
+  IF _tables IS NULL OR json_array_contains(_tables, "work") THEN
     REPLACE INTO _view SELECT 
-      t.id, 
+      w.id, 
       r.word,
       r.relevance,
-      'travaux',
+      'work',
       JSON_OBJECT(
-        'nomClient', IF(cl.categorie=0, cl.societe, CONCAT(cl.nom, IF(cl.prenom != '', CONCAT(' ', cl.prenom), ''))),
-        'type', 'travaux',
-        'stype', ts.tag,
-        'typeTravail', tt.tag,
-        'civilite', ci.shortTag,
-        'clientId', cl.id,
-        'devisId', d.id,
-        'chrono', d.chrono,
-        'description', t.description,
-        'ht', d.ht,
-        'taux_tva', d.tva,
-        'val_tva', d.ttc-d.ht,
-        'ttc', d.ttc,
-        'remis', d.remis,
-        'remis', d.folderId,
-        'ctime', d.ctime,
-        'statut', d.statut
+        'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
+        'type',  wt.tag,
+        'compType', cc.tag,
+        'gender', g.shortTag,
+        'custId', c.id,
+        'quotId', q.id,
+        'chrono', q.chrono,
+        'description', w.description,
+        'ht', q.ht,
+        'taux_tva', q.tva,
+        'val_tva', q.ttc-q.ht,
+        'ttc', q.ttc,
+        'remis', q.remis,
+        'remis', q.folderId,
+        'ctime', q.ctime,
+        'statut', q.status
       ) content,
-      d.ctime
-      FROM travaux t 
+      q.ctime
+      FROM work w
         INNER JOIN seo_object o USING(id) 
         INNER JOIN _results r USING(ref_id)
-        INNER JOIN devis d ON t.id=d.travauxId AND t.clientId=d.clientId
-        INNER JOIN typeTravaux tt ON t.categorie=tt.id
-        INNER JOIN client cl ON cl.id=t.clientId AND t.clientId=d.clientId
-        LEFT JOIN civilite ci ON ci.id=cl.genre
-        LEFT JOIN typeSoc ts ON cl.type = ts.id
-        WHERE o.table = 'travaux';
+        INNER JOIN quotation q ON w.id=q.workId AND w.custId=q.custId
+        INNER JOIN workType wt ON w.category=wt.id
+        INNER JOIN customer c ON c.id=w.custId AND w.custId=q.custId
+        LEFT JOIN gender g ON g.id=c.gender
+        LEFT JOIN companyClass cc ON c.type = cc.id
+        WHERE o.table = 'work';
   END IF;
 
   SELECT *, ctype `type` FROM _view ORDER BY relevance LIMIT _offset ,_range;
