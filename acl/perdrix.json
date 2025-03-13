@@ -6,13 +6,19 @@
         "src": "read"
       }
     },
+    "customer_search": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
+    },
     "search": {
       "scope": "hub",
       "permission": {
         "src": "read"
       }
     },
-    "search_address": {
+    "search_location": {
       "scope": "hub",
       "permission": {
         "src": "read"
