@@ -1,5 +1,11 @@
 {
   "services": {
+    "get_env": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
+    },
     "customer_list": {
       "scope": "hub",
       "permission": {
@@ -7,6 +13,12 @@
       }
     },
     "customer_search": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
+    },
+    "customer_create": {
       "scope": "hub",
       "permission": {
         "src": "read"
@@ -22,13 +34,6 @@
       "scope": "hub",
       "permission": {
         "src": "read"
-      }
-    },
-    "get_env": {
-      "scope": "hub",
-      "permission": {
-        "src": "anyone",
-        "fast_check": "public-api"
       }
     },
     "remove": {

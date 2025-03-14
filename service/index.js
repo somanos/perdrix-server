@@ -16,8 +16,21 @@ class Perdrix extends Entity {
     const page = this.input.get(Attr.page);
     let words = this.input.get('words') || '^.*$';
     let data = await Db.await_proc('customer_list', { words, sort_by, order, page });
-    this.debug("AAAA:19", { words, sort_by, order, page })
     this.output.list(data);
+  }
+
+  /**
+   * 
+   */
+  async customer_create() {
+    const sort_by = this.input.get(Attr.sort_by) || 'nom';
+    const order = this.input.get(Attr.order) || 'asc';
+    const page = this.input.get(Attr.page);
+    const type = this.input.get(Attr.type);
+    let words = this.input.get('words') || '^.*$';
+    words = `^${words}`;
+    let data = { words }
+    this.output.data(data);
   }
 
   /**
@@ -61,15 +74,27 @@ class Perdrix extends Entity {
     words = words.replace(/ +/g, '+');
     let api_endpoint = Cache.getSysConf('address_api_endpoint');
     let url = api_endpoint.format(words)
-    Network.request(url).then((data)=>{
+    this.debug("AAA:63 waiting for", { words, url })
+    Network.request(url).then((data) => {
       let { features } = data || {};
-      this.debug("AAA:37", { words, api_endpoint}, features)
+      this.debug("AAA:67 received", features, { words, url })
       this.output.list(features);
-    }).catch((e)=>{
-      this.warn("Failed to get data from ", { words, api_endpoint}, e)
+    }).catch((e) => {
+      this.warn("Failed to get data from ", { words, url }, e)
       this.output.list([]);
-  
     });
+  }
+
+  /**
+    * 
+  */
+  async get_env() {
+    let data = {};
+    data.genderList = await Db.await_query(
+      "SELECT shortTag label, id value FROM gender"
+    );
+    data.streetType = await Db.await_query("SELECT * FROM streetType");
+    this.output.data(data);
   }
 
 }
