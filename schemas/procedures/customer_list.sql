@@ -21,11 +21,11 @@ BEGIN
   CALL yp.pageToLimits(_page, _offset, _range);  
 
   SELECT 
-    c.id clientId, 
+    c.id custId, 
     IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))) custName,
     c.ctime,
     c.category,
-    cc.tag compType,
+    cc.tag companyclass,
     g.shortTag gender,
     c.location,
     JSON_VALUE(c.location, "$[2]") street,

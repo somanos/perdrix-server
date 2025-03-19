@@ -22,14 +22,21 @@ class Perdrix extends Entity {
   /**
    * 
    */
-  async customer_create() {
-    const sort_by = this.input.get(Attr.sort_by) || 'nom';
-    const order = this.input.get(Attr.order) || 'asc';
+  async work_list() {
+    const custId = this.input.get('custId');
+    const siteId = this.input.get('siteId');
     const page = this.input.get(Attr.page);
-    const type = this.input.get(Attr.type);
-    let words = this.input.get('words') || '^.*$';
-    words = `^${words}`;
-    let data = { words }
+    this.debug("AAA:26", JSON.stringify({ custId, siteId, page }))
+    let data = await Db.await_proc('work_list', { custId, siteId, page });
+    this.output.list(data);
+  }
+
+  /**
+   * 
+   */
+  async customer_create() {
+    let data = this.input.get('args')
+    this.debug("AAA:26", JSON.stringify(data))
     this.output.data(data);
   }
 
@@ -48,6 +55,15 @@ class Perdrix extends Entity {
     this.output.list(data);
   }
 
+  /**
+   * 
+   */
+  async customer_get() {
+    const custId = this.input.get('custId');
+    let data = await Db.await_proc('customer_list', { custId });
+    this.output.list(data);
+  }
+
 
   /**
     * 
@@ -63,6 +79,8 @@ class Perdrix extends Entity {
       if (!/^.+\*$/.test(words)) words = words + "*";
     }
     let data = await Db.await_proc('seo_search', { words, page }, tables);
+    this.debug("AAAA:19", { words, tables, page, data })
+
     this.output.list(data);
   }
 
@@ -91,9 +109,20 @@ class Perdrix extends Entity {
   async get_env() {
     let data = {};
     data.genderList = await Db.await_query(
-      "SELECT shortTag label, id value FROM gender"
+      "SELECT shortTag label, id, longTag FROM gender"
     );
-    data.streetType = await Db.await_query("SELECT * FROM streetType");
+    data.streetType = await Db.await_query(
+      "SELECT shortTag label, id, longTag FROM streetType"
+    );
+    data.countryCode = await Db.await_query(
+      "SELECT code label, id, code countrycode, indicatif FROM country"
+    );
+    data.companyClass = await Db.await_query(
+      "SELECT tag label, id FROM companyClass"
+    );
+    data.workType = await Db.await_query(
+      "SELECT tag label, id FROM workType"
+    );
     this.output.data(data);
   }
 

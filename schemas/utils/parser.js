@@ -96,6 +96,7 @@ async function inject(src, dest) {
     fields.push(c.Field);
     types.push(c.Type);
   }
+  console.log({fields, types})
   sql = sql.replace(/\, *$/, ') VALUES(')
   let stm = [];
   try {
@@ -119,6 +120,7 @@ async function inject(src, dest) {
     });
     await events.once(rl, "close");
     for (let item of stm) {
+      console.log(item)
       let r = await Perdrix.await_query(item.sql, ...item.row);
       if (!r) {
         exit(0)

@@ -24,6 +24,12 @@
         "src": "read"
       }
     },
+    "customer_get": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
+    },
     "search": {
       "scope": "hub",
       "permission": {
@@ -31,6 +37,12 @@
       }
     },
     "search_location": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
+    },
+    "work_list": {
       "scope": "hub",
       "permission": {
         "src": "read"

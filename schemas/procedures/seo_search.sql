@@ -50,7 +50,7 @@ BEGIN
 
   DROP TABLE IF EXISTS _types;
   CREATE TEMPORARY TABLE _types(
-    compType VARCHAR(32)
+    companyclass VARCHAR(32)
   );
 
   IF _tables IS NULL OR json_array_contains(_tables, "site") THEN
@@ -62,9 +62,10 @@ BEGIN
       JSON_OBJECT(
         'custId', c.id,
         'gender', g.shortTag,
-        'compType', cc.tag,
+        'companyclass', cc.tag,
         'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
-        'location', s.location,
+        'location', c.location,
+        'site', s.location,
         'city', s.city,
         'postcode', s.postcode
       ) content,
@@ -85,9 +86,9 @@ BEGIN
       r.relevance,
       'customer',
       JSON_OBJECT(
-        'id', c.id,
+        'custId', c.id,
         'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
-        'compType', cc.tag,
+        'companyclass', cc.tag,
         'gender', g.shortTag,
         'location', c.location,
         'city', c.city,
@@ -111,9 +112,12 @@ BEGIN
       JSON_OBJECT(
         'custId', c.id,
         'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
-        'compType', cc.tag,
+        'companyclass', cc.tag,
+        'city', c.city,
+        'location', c.location,
         'category', c.category,
         'pocGender', g.shortTag,
+        'gender', gg.shortTag,
         'siteId', p.siteId,
         'pocName', CONCAT(p.lastname, IF(p.firstname != '', CONCAT(' ', p.firstname), '')),
         'email', p.email,
@@ -125,6 +129,7 @@ BEGIN
         INNER JOIN customer c ON c.id=p.custId AND p.id=o.id
         INNER JOIN _results r USING(ref_id)
         LEFT JOIN gender g ON g.id=p.gender
+        LEFT JOIN gender gg ON g.id=c.gender
         LEFT JOIN companyClass cc ON c.type = cc.id
         WHERE o.table = 'poc';
   END IF;
@@ -138,18 +143,21 @@ BEGIN
       JSON_OBJECT(
         'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
         'type',  wt.tag,
-        'compType', cc.tag,
+        'companyclass', cc.tag,
         'gender', g.shortTag,
         'custId', c.id,
-        'quotId', q.id,
+        'quoteId', q.id,
+        'workId', w.id,
         'chrono', q.chrono,
+        'location', c.location,
+        'city', c.city,
         'description', w.description,
         'ht', q.ht,
         'taux_tva', q.tva,
         'val_tva', q.ttc-q.ht,
         'ttc', q.ttc,
-        'remis', q.remis,
-        'remis', q.folderId,
+        'discount', q.discount,
+        'folderId', q.folderId,
         'ctime', q.ctime,
         'statut', q.status
       ) content,
