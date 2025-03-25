@@ -25,9 +25,20 @@ class Perdrix extends Entity {
   async work_list() {
     const custId = this.input.get('custId');
     const siteId = this.input.get('siteId');
+    const status = this.input.get(Attr.status);
     const page = this.input.get(Attr.page);
-    this.debug("AAA:26", JSON.stringify({ custId, siteId, page }))
-    let data = await Db.await_proc('work_list', { custId, siteId, page });
+    let data = await Db.await_proc('work_list', { custId, siteId, page, status });
+    this.output.list(data);
+  }
+
+  /**
+   * 
+   */
+  async site_list() {
+    const custId = this.input.get('custId');
+    const page = this.input.get(Attr.page);
+    this.debug("AAA:40", JSON.stringify({ custId, page }))
+    let data = await Db.await_proc('site_list', { custId, page });
     this.output.list(data);
   }
 

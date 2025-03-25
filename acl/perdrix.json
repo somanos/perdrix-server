@@ -36,6 +36,12 @@
         "src": "read"
       }
     },
+    "site_list": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
+    },
     "search_location": {
       "scope": "hub",
       "permission": {

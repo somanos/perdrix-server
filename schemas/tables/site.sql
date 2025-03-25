@@ -10,7 +10,7 @@ CREATE TABLE
     `city` text DEFAULT NULL,
     `lattitude` double DEFAULT NULL,
     `longitude` double DEFAULT NULL,
-    `ctime` date DEFAULT NULL,
+    `ctime` int (11) unsigned DEFAULT NULL,
     `statut` int (10) unsigned DEFAULT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `id` (`id`, `custId`)

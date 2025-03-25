@@ -111,7 +111,7 @@ async function inject(src, dest) {
 
     let first = 1;
     rl.on("line", async (line) => {
-      let d = line.split(/[;]/);
+      let d = line.split('|');
       if (first) {
         first = 0;
         return;
