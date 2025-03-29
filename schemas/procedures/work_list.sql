@@ -57,8 +57,8 @@ BEGIN
       'location', s.location,
       'postcode', s.postcode,
       'city', s.city,
-      'lat', s.lattitude,
-      'lon', s.longitude,
+      'lat', s.lat,
+      'lon', s.lon,
       'ctime', s.ctime,
       'statut', s.statut
     ) `site`

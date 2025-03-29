@@ -1,8 +1,8 @@
 const { Entity } = require('@drumee/server-core');
+const { getPluginsInfo, getUiInfo } = require('@drumee/server-essentials');
 const {
   Cache, Attr, Mariadb, Network, toArray
 } = require('@drumee/server-essentials');
-const { resolve } = require('path');
 const Db = new Mariadb({ name: 'perdrix' });
 
 class Perdrix extends Entity {
@@ -28,6 +28,7 @@ class Perdrix extends Entity {
     const status = this.input.get(Attr.status);
     const page = this.input.get(Attr.page);
     let data = await Db.await_proc('work_list', { custId, siteId, page, status });
+    this.debug("AAA:31", JSON.stringify({ custId, page, data }))
     this.output.list(data);
   }
 
@@ -37,8 +38,8 @@ class Perdrix extends Entity {
   async site_list() {
     const custId = this.input.get('custId');
     const page = this.input.get(Attr.page);
-    this.debug("AAA:40", JSON.stringify({ custId, page }))
     let data = await Db.await_proc('site_list', { custId, page });
+    this.debug("AAA:42", JSON.stringify({ custId, page, data }))
     this.output.list(data);
   }
 
@@ -46,8 +47,19 @@ class Perdrix extends Entity {
    * 
    */
   async customer_create() {
-    let data = this.input.get('args')
-    this.debug("AAA:26", JSON.stringify(data))
+    let args = this.input.get('args')
+    this.debug("AAA:26", JSON.stringify(args))
+    let data = await Db.await_proc('customer_create', args);
+    this.output.data(data);
+  }
+
+  /**
+   * 
+   */
+  async site_create() {
+    let args = this.input.get('args')
+    this.debug("AAA:26", JSON.stringify(args))
+    let data = await Db.await_proc('site_create', args);
     this.output.data(data);
   }
 
@@ -62,7 +74,8 @@ class Perdrix extends Entity {
     let words = this.input.get('words') || '^.*$';
     words = `^${words}`;
     let data = await Db.await_proc('customer_list', { words, sort_by, order, page, type });
-    this.debug("AAAA:19", { words, sort_by, order, page })
+    this.debug("AAAA:65", { words, sort_by, order, page })
+    console.log("AAA:8888", getUiInfo(), getPluginsInfo())
     this.output.list(data);
   }
 
@@ -90,8 +103,6 @@ class Perdrix extends Entity {
       if (!/^.+\*$/.test(words)) words = words + "*";
     }
     let data = await Db.await_proc('seo_search', { words, page }, tables);
-    this.debug("AAAA:19", { words, tables, page, data })
-
     this.output.list(data);
   }
 
@@ -106,7 +117,10 @@ class Perdrix extends Entity {
     this.debug("AAA:63 waiting for", { words, url })
     Network.request(url).then((data) => {
       let { features } = data || {};
-      this.debug("AAA:67 received", features, { words, url })
+      let r = features.map((e) => {
+        e.id = e.properties.id;
+        return e;
+      })
       this.output.list(features);
     }).catch((e) => {
       this.warn("Failed to get data from ", { words, url }, e)
@@ -134,6 +148,7 @@ class Perdrix extends Entity {
     data.workType = await Db.await_query(
       "SELECT tag label, id FROM workType"
     );
+    data.hubId = await this.yp.await_func('get_sysconf', 'perdrix-hub');
     this.output.data(data);
   }
 

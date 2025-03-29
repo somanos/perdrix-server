@@ -1,17 +1,16 @@
 
 DELIMITER $
 
-DROP PROCEDURE IF EXISTS `customer_get`$
-CREATE PROCEDURE `customer_get`(
+DROP PROCEDURE IF EXISTS `site_get`$
+CREATE PROCEDURE `site_get`(
   IN _args JSON
 )
-BEGIN  
+BEGIN  DECLARE _siteId INTEGER ;
 
-  DECLARE _custId INTEGER ;
-  SELECT JSON_VALUE(_args, "$.custId") INTO _custId;
+  SELECT JSON_VALUE(_args, "$.siteId") INTO _siteId;
 
   SELECT 
-    c.id custId, 
+    c.id siteId, 
     IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))) custName,
     c.ctime,
     c.category,
@@ -24,7 +23,7 @@ BEGIN
   FROM customer c
     LEFT JOIN companyClass cc ON c.type = cc.id
     LEFT JOIN gender g ON c.gender = g.id
-    WHERE c.id = _custId;
+    WHERE c.id = _siteId;
 END$
 
 DELIMITER ;
