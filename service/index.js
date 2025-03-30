@@ -88,6 +88,25 @@ class Perdrix extends Entity {
     this.output.list(data);
   }
 
+  /**
+   * 
+   */
+  async poc_list() {
+    const custId = this.input.get('custId');
+    let data = await Db.await_proc('poc_list', { custId });
+    this.output.list(data);
+  }
+
+  /**
+   * 
+   */
+  async poc_sites() {
+    const custId = this.input.get('custId');
+    const id = this.input.get(Attr.id);
+    let data = await Db.await_proc('poc_sites', { custId, id });
+    this.output.list(data);
+  }
+
 
   /**
     * 
@@ -121,6 +140,7 @@ class Perdrix extends Entity {
         e.id = e.properties.id;
         return e;
       })
+      //this.debug("AAA:143", features)
       this.output.list(features);
     }).catch((e) => {
       this.warn("Failed to get data from ", { words, url }, e)

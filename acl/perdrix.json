@@ -30,6 +30,18 @@
         "src": "read"
       }
     },
+    "poc_list": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
+    },
+    "poc_sites": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
+    },
     "search": {
       "scope": "hub",
       "permission": {
