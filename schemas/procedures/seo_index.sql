@@ -12,14 +12,12 @@ BEGIN
   DECLARE _count INTEGER UNSIGNED DEFAULT 0;
   DECLARE _id INTEGER UNSIGNED;
   DECLARE _table VARCHAR(16) CHARACTER SET ascii COLLATE ascii_general_ci;
-  DECLARE _db VARCHAR(64) CHARACTER SET ascii COLLATE ascii_general_ci;
   DECLARE _ref_id VARCHAR(64) CHARACTER SET ascii COLLATE ascii_general_ci;
 
   SELECT unix_timestamp() INTO _id;
   SELECT JSON_VALUE(_reference, "$.id") INTO _id;
   SELECT JSON_VALUE(_reference, "$.table") INTO _table;
-  SELECT JSON_VALUE(_reference, "$.db") INTO _db;
-
+  SELECT JSON_SET(_reference, "$.db", database()) INTO _reference;
   SELECT MD5(REGEXP_REPLACE(CONCAT(_type, _word), ' +', '')) INTO _ref_id;
   SELECT count(1) FROM seo_object WHERE ref_id=_ref_id INTO _count;
   SELECT unix_timestamp() INTO _ts;

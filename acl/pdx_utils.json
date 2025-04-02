@@ -1,0 +1,20 @@
+{
+  "services": {
+    "get_env": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
+    },
+    "get_geoloc": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
+    }
+ },
+  "modules": {
+    "private": "service/pdx_utils",
+    "public": "service/pdx_utils"
+  }
+}

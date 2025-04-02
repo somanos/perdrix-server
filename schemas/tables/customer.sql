@@ -1,7 +1,7 @@
-DROP TABLE IF EXISTS client;
+DROP TABLE IF EXISTS customer;
 
 CREATE TABLE
-  client (
+  customer (
     `id` int (10) unsigned NOT NULL AUTO_INCREMENT,
     `category` int (10) unsigned DEFAULT NULL,
     `type` int (10) unsigned DEFAULT NULL,
@@ -14,6 +14,7 @@ CREATE TABLE
     `citycode` varchar(200) DEFAULT NULL,
     `city` text DEFAULT NULL,
     `countrycode` int (10) unsigned DEFAULT NULL,
+    `geometry` JSON,
     `ctime` int (11) unsigned DEFAULT NULL,
     PRIMARY KEY (`id`)
   );

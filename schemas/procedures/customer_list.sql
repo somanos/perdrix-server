@@ -28,8 +28,10 @@ BEGIN
     cc.tag companyclass,
     g.shortTag gender,
     c.location,
+    c.geometry,
     JSON_VALUE(c.location, "$[2]") street,
     c.city,
+    c.citycode,
     c.postcode
   FROM customer c
     LEFT JOIN companyClass cc ON c.type = cc.id

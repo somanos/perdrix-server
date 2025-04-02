@@ -179,6 +179,7 @@ class Perdrix extends Entity {
       "SELECT tag label, id FROM workType"
     );
     data.hub_id = await this.yp.await_func('get_sysconf', 'perdrix-hub');
+    data.map_tiler_api_key = await this.yp.await_func('get_sysconf', 'map-tiler-api-key');
     this.output.data(data);
   }
 

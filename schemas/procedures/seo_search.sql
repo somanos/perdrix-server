@@ -66,6 +66,7 @@ BEGIN
         'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
         'location', c.location,
         'site', s.location,
+        'geometry', s.geometry,
         'city', s.city,
         'postcode', s.postcode
       ) content,
@@ -92,6 +93,7 @@ BEGIN
         'gender', g.shortTag,
         'location', c.location,
         'city', c.city,
+        'geometry', c.geometry,
         'postcode', c.postcode
       ) content,
       c.ctime
@@ -115,6 +117,7 @@ BEGIN
         'companyclass', cc.tag,
         'city', c.city,
         'location', c.location,
+        'geometry', c.geometry,
         'category', c.category,
         'pocGender', g.shortTag,
         'gender', gg.shortTag,

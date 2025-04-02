@@ -31,9 +31,9 @@ BEGIN
       'countrycode', s.countrycode,
       'location', s.location,
       'postcode', s.postcode,
+      'citycode', s.citycode,
       'city', s.city,
-      'lat', s.lat,
-      'lon', s.lon,
+      'geometry', s.geometry,
       'ctime', s.ctime,
       'statut', s.statut
     ) `site`

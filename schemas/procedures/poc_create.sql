@@ -1,8 +1,8 @@
 
 DELIMITER $
 
-DROP PROCEDURE IF EXISTS `customer_create`$
-CREATE PROCEDURE `customer_create`(
+DROP PROCEDURE IF EXISTS `poc_create`$
+CREATE PROCEDURE `poc_create`(
   IN _args JSON
 )
 BEGIN
@@ -25,7 +25,6 @@ BEGIN
   DECLARE _reference JSON;
   DECLARE _id INTEGER;
   DECLARE _location JSON;
-  DECLARE _geometry JSON;
 
   SELECT IFNULL(JSON_VALUE(_args, "$.housenumber"), "") INTO _housenumber;
   SELECT IFNULL(JSON_VALUE(_args, "$.streettype"), "34") INTO _streettype;
@@ -42,8 +41,6 @@ BEGIN
   SELECT IFNULL(JSON_VALUE(_args, "$.citycode"), _postcode) INTO _citycode;
   SELECT IFNULL(JSON_VALUE(_args, "$.city"), "") INTO _city;
   SELECT IFNULL(JSON_VALUE(_args, "$.countrycode"), 'France') INTO  _countrycode;
-  SELECT JSON_EXTRACT(_args, "$.geometry") INTO _geometry;
-
   SELECT JSON_ARRAY(
     _housenumber, _streettype, _streetname, _additional
   ) INTO _location;
@@ -51,7 +48,7 @@ BEGIN
   SELECT id FROM country WHERE code=_countrycode INTO _ccode;
   SELECT id FROM companyClass WHERE tag=_companyclass INTO _companycode;
 
-  INSERT INTO customer 
+  INSERT INTO poc 
     SELECT NULL,
     _category,
     _companycode,
@@ -64,12 +61,11 @@ BEGIN
     _citycode,
     _city,
     _ccode,
-    _geometry,
     UNIX_TIMESTAMP();
 
-  SELECT max(id) FROM `customer` INTO _id;
-  IF(MOD(_id%666, 6) = 0) THEN
-    INSERT INTO customer 
+  SELECT max(id) FROM `poc` INTO _id;
+  IF(_id LIKE "%666%") THEN
+    INSERT INTO poc 
       SELECT _id+1,
       _category,
       _companycode,
@@ -82,21 +78,20 @@ BEGIN
       _citycode,
       _city,
       _ccode,
-      _geometry,
       UNIX_TIMESTAMP();
-    DELETE FROM `customer` WHERE id=_id;
+    DELETE FROM `poc` WHERE id=_id;
   END IF;
 
   SELECT JSON_OBJECT(
     'id', _id,
     'table', 'site',
-    'db', 'perdrix'
+    'db', database()
   ) INTO _reference;
 
   CALL seo_index(CONCAT(_lastname, ' ', _firstname), 'custName', _reference);
   CALL seo_index(_city, 'city', _reference);
   CALL seo_index(_streetname, 'streetName', _reference);
-  CALL customer_get(JSON_OBJECT('custId', _id));
+  CALL poc_get(JSON_OBJECT('custId', _id));
 END$
 
 DELIMITER ;
