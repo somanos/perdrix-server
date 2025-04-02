@@ -6,80 +6,77 @@ CREATE PROCEDURE `poc_create`(
   IN _args JSON
 )
 BEGIN
-  DECLARE _housenumber VARCHAR(10);
-  DECLARE _streettype VARCHAR(512);
-  DECLARE _streetname VARCHAR(512);
-  DECLARE _additional VARCHAR(512);
-  DECLARE _category INTEGER;
-  DECLARE _companyname VARCHAR(512);
-  DECLARE _companyclass VARCHAR(128) DEFAULT "";
-  DECLARE _companycode INTEGER;
-  DECLARE _ccode INTEGER;
-  DECLARE _gender VARCHAR(128) DEFAULT 0;
-  DECLARE _lastname VARCHAR(512);
-  DECLARE _firstname VARCHAR(512);
-  DECLARE _postcode INTEGER;
-  DECLARE _citycode INTEGER;
-  DECLARE _city VARCHAR(512);
-  DECLARE _countrycode VARCHAR(512);
-  DECLARE _reference JSON;
+  DECLARE _custId INTEGER;
+  DECLARE _siteId INTEGER;
   DECLARE _id INTEGER;
-  DECLARE _location JSON;
+  DECLARE _role VARCHAR(200);
+  DECLARE _gender VARCHAR(512);
+  DECLARE _lastname VARCHAR(512) DEFAULT "";
+  DECLARE _firstname VARCHAR(128) DEFAULT "";
 
-  SELECT IFNULL(JSON_VALUE(_args, "$.housenumber"), "") INTO _housenumber;
-  SELECT IFNULL(JSON_VALUE(_args, "$.streettype"), "34") INTO _streettype;
-  SELECT IFNULL(JSON_VALUE(_args, "$.streetname"), "") INTO _streetname;
-  SELECT IFNULL(JSON_VALUE(_args, "$.additional"), "") INTO _additional;
+  DECLARE _mobile VARCHAR(128) DEFAULT "";
+  DECLARE _home VARCHAR(128) DEFAULT "";
+  DECLARE _office VARCHAR(128) DEFAULT "";
+  DECLARE _fax VARCHAR(128) DEFAULT "";
 
-  SELECT IFNULL(JSON_VALUE(_args, "$.category"), 0) INTO _category;
-  SELECT IFNULL(JSON_VALUE(_args, "$.companyname"), "") INTO _companyname;
-  SELECT IFNULL(JSON_VALUE(_args, "$.companyclass"), "") INTO _companyclass;
-  SELECT IFNULL(JSON_VALUE(_args, "$.gender"), 0) INTO _gender;
+  DECLARE _email VARCHAR(512);
+  DECLARE _city VARCHAR(512) DEFAULT "";
+  DECLARE _streetname VARCHAR(512) DEFAULT "";
+  DECLARE _siteType VARCHAR(512) DEFAULT "site";
+
+  DECLARE _phones JSON;
+  DECLARE _reference JSON;
+  DECLARE _gcode INTEGER;
+
+  SELECT IFNULL(JSON_VALUE(_args, "$.custId"), 0) INTO _custId;
+  SELECT IFNULL(JSON_VALUE(_args, "$.siteId"), 0) INTO _siteId;
+  SELECT IFNULL(JSON_VALUE(_args, "$.siteType"), "site") INTO _siteType;
+  SELECT IFNULL(JSON_VALUE(_args, "$.role"), "") INTO _role;
+  SELECT IFNULL(JSON_VALUE(_args, "$.gender"), "") INTO _gender;
   SELECT IFNULL(JSON_VALUE(_args, "$.lastname"), "") INTO _lastname;
   SELECT IFNULL(JSON_VALUE(_args, "$.firstname"), "") INTO _firstname;
-  SELECT IFNULL(JSON_VALUE(_args, "$.postcode"), 99999) INTO _postcode;
-  SELECT IFNULL(JSON_VALUE(_args, "$.citycode"), _postcode) INTO _citycode;
-  SELECT IFNULL(JSON_VALUE(_args, "$.city"), "") INTO _city;
-  SELECT IFNULL(JSON_VALUE(_args, "$.countrycode"), 'France') INTO  _countrycode;
-  SELECT JSON_ARRAY(
-    _housenumber, _streettype, _streetname, _additional
-  ) INTO _location;
+  SELECT IFNULL(JSON_VALUE(_args, "$.email"), "") INTO _email;
+  SELECT IFNULL(JSON_VALUE(_args, "$.mobile"), "") INTO _mobile;
+  SELECT IFNULL(JSON_VALUE(_args, "$.home"), "") INTO _home;
+  SELECT IFNULL(JSON_VALUE(_args, "$.office"), "") INTO _office;
+  SELECT IFNULL(JSON_VALUE(_args, "$.fax"), "") INTO _fax;
 
-  SELECT id FROM country WHERE code=_countrycode INTO _ccode;
-  SELECT id FROM companyClass WHERE tag=_companyclass INTO _companycode;
+  SELECT JSON_ARRAY(
+    _office, _home, _mobile, _fax
+  ) INTO _phones;
+
+  SELECT id FROM gender WHERE shortTag=_gender OR longTag=_gender INTO _gcode;
 
   INSERT INTO poc 
     SELECT NULL,
-    _category,
-    _companycode,
-    _companyname,
-    _gender,
+    _custId,
+    _siteId,
+    _siteType,
+    _role,
+    _gcode,
     _lastname,
     _firstname,
-    _location,
-    _postcode,
-    _citycode,
-    _city,
-    _ccode,
-    UNIX_TIMESTAMP();
+    _email,
+    _phones,
+    UNIX_TIMESTAMP(),
+    1;
 
   SELECT max(id) FROM `poc` INTO _id;
   IF(_id LIKE "%666%") THEN
+    DELETE FROM `poc` WHERE id=_id;
     INSERT INTO poc 
       SELECT _id+1,
-      _category,
-      _companycode,
-      _companyname,
-      _gender,
-      _lastname,
-      _firstname,
-      _location,
-      _postcode,
-      _citycode,
-      _city,
-      _ccode,
-      UNIX_TIMESTAMP();
-    DELETE FROM `poc` WHERE id=_id;
+        _custId,
+        _siteId,
+        _siteType,
+        _role,
+        _gcode,
+        _lastname,
+        _firstname,
+        _email,
+        _phones,
+        UNIX_TIMESTAMP(),
+        1;
   END IF;
 
   SELECT JSON_OBJECT(
@@ -88,10 +85,20 @@ BEGIN
     'db', database()
   ) INTO _reference;
 
-  CALL seo_index(CONCAT(_lastname, ' ', _firstname), 'custName', _reference);
-  CALL seo_index(_city, 'city', _reference);
-  CALL seo_index(_streetname, 'streetName', _reference);
-  CALL poc_get(JSON_OBJECT('custId', _id));
+  CALL seo_index(CONCAT(_lastname, ' ', _firstname), 'poc', _reference);
+  SELECT city, JSON_VALUE(location, '$[2]') FROM customer WHERE id=_custId INTO
+    _city, _streetname;
+
+  IF _city IS NOT NULL THEN
+    CALL seo_index(_city, 'city', _reference);
+  END IF;
+
+  IF _streetname IS NOT NULL THEN
+    CALL seo_index(_streetname, 'streetName', _reference);
+  END IF;
+
+  SELECT max(id) FROM `poc` INTO _id;
+  CALL poc_get(_id);
 END$
 
 DELIMITER ;

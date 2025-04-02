@@ -1,5 +1,4 @@
 const { Entity } = require('@drumee/server-core');
-const { getPluginsInfo, getUiInfo } = require('@drumee/server-essentials');
 const {
   Cache, Attr, Network
 } = require('@drumee/server-essentials');
@@ -27,6 +26,9 @@ class PerdrixUtils extends Entity {
       "SELECT tag label, id FROM workType"
     );
     data.hub_id = await this.yp.await_func('get_sysconf', 'perdrix-hub');
+    data.pocRoles = await this.db.await_query(
+      'SELECT DISTINCT role label, role FROM poc'
+    );
     data.map_tiler_api_key = await this.yp.await_func('get_sysconf', 'map-tiler-api-key');
     this.output.data(data);
   }
@@ -48,11 +50,12 @@ class PerdrixUtils extends Entity {
     this.debug("AAA:48", { type, id })
     Network.request(url).then(async (data) => {
       let { features } = data || {};
+      let res = features[0];
       this.debug("AAA:51", features);
-      if (features[0] && features[0].geometry) {
-        await this.db.await_proc('site_update_geo', id, features[0].geometry)
+      if (res && res.geometry) {
+        await this.db.await_proc('update_geo', id, type, res.geometry)
       }
-      this.output.data(features);
+      this.output.data(res);
     }).catch((e) => {
       this.warn("Failed to get data from ", { words, url }, e)
       this.output.data({});

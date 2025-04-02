@@ -1,24 +1,17 @@
 
 DELIMITER $
 
-DROP PROCEDURE IF EXISTS `poc_list`$
-CREATE PROCEDURE `poc_list`(
-  IN _args JSON
+DROP PROCEDURE IF EXISTS `poc_get`$
+CREATE PROCEDURE `poc_get`(
+  IN _id INTEGER
 )
-BEGIN
-  DECLARE _range bigint;
-  DECLARE _offset bigint;
-  DECLARE _page INTEGER DEFAULT 1;
-  DECLARE _custId INTEGER ;
+BEGIN  
 
-  SELECT IFNULL(JSON_VALUE(_args, "$.page"), 1) INTO _page;
-  SELECT JSON_VALUE(_args, "$.custId") INTO _custId;
-  CALL yp.pageToLimits(_page, _offset, _range);
-
-  SELECT
+  SELECT 
     p.id,
-    p.custId,
-    p.siteId,
+    c.id custId, 
+    COALESCE(s.id, c.id) siteId, 
+    CONCAT(p.lastname, IF(p.firstname != '', CONCAT(' ', p.firstname), '')) pocName,
     p.role,
     g.shortTag gender,
     p.lastname,
@@ -48,11 +41,10 @@ BEGIN
       )
     ) `site`
   FROM poc p
-    LEFT JOIN `site` s ON s.custId=p.custId
-    LEFT JOIN customer c ON c.id = p.custId
-    INNER JOIN gender g ON p.gender = g.id
-    WHERE p.custId = _custId
-    LIMIT _offset ,_range;
+    INNER JOIN `site` s ON s.custId=p.custId AND p.siteId=s.id
+    INNER JOIN customer c ON c.id = p.custId
+    LEFT JOIN gender g ON p.gender = g.id
+    WHERE p.id = _id;
 END$
 
 DELIMITER ;

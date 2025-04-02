@@ -100,7 +100,6 @@ class Perdrix extends Entity {
    * 
    */
   async poc_create() {
-    const custId = this.input.get('custId');
     let args = this.input.get('args')
     this.debug("AAA:26", JSON.stringify(args))
     let data = await this.db.await_proc('poc_create', args);
