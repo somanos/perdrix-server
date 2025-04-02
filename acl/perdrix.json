@@ -21,7 +21,7 @@
     "customer_create": {
       "scope": "hub",
       "permission": {
-        "src": "read"
+        "src": "write"
       }
     },
     "customer_get": {
@@ -51,7 +51,7 @@
     "site_create": {
       "scope": "hub",
       "permission": {
-        "src": "read"
+        "src": "write"
       }
     },
     "site_list": {
@@ -70,13 +70,6 @@
       "scope": "hub",
       "permission": {
         "src": "read"
-      }
-    },
-    "remove": {
-      "scope": "hub",
-      "permission": {
-        "src": "anyone",
-        "fast_check": "public-api"
       }
     }
   },
