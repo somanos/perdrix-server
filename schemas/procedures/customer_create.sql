@@ -68,7 +68,7 @@ BEGIN
     UNIX_TIMESTAMP();
 
   SELECT max(id) FROM `customer` INTO _id;
-  IF(MOD(_id%666, 6) = 0) THEN
+  IF skip_number(_id) THEN
     INSERT INTO customer 
       SELECT _id+1,
       _category,

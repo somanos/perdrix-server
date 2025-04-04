@@ -22,7 +22,6 @@ BEGIN
   DECLARE _email VARCHAR(512);
   DECLARE _city VARCHAR(512) DEFAULT "";
   DECLARE _streetname VARCHAR(512) DEFAULT "";
-  DECLARE _siteType VARCHAR(512) DEFAULT "site";
 
   DECLARE _phones JSON;
   DECLARE _reference JSON;
@@ -30,7 +29,6 @@ BEGIN
 
   SELECT IFNULL(JSON_VALUE(_args, "$.custId"), 0) INTO _custId;
   SELECT IFNULL(JSON_VALUE(_args, "$.siteId"), 0) INTO _siteId;
-  SELECT IFNULL(JSON_VALUE(_args, "$.siteType"), "site") INTO _siteType;
   SELECT IFNULL(JSON_VALUE(_args, "$.role"), "") INTO _role;
   SELECT IFNULL(JSON_VALUE(_args, "$.gender"), "") INTO _gender;
   SELECT IFNULL(JSON_VALUE(_args, "$.lastname"), "") INTO _lastname;
@@ -51,7 +49,6 @@ BEGIN
     SELECT NULL,
     _custId,
     _siteId,
-    _siteType,
     _role,
     _gcode,
     _lastname,
@@ -62,13 +59,12 @@ BEGIN
     1;
 
   SELECT max(id) FROM `poc` INTO _id;
-  IF(_id LIKE "%666%") THEN
+  IF skip_number(_id) THEN
     DELETE FROM `poc` WHERE id=_id;
     INSERT INTO poc 
       SELECT _id+1,
         _custId,
         _siteId,
-        _siteType,
         _role,
         _gcode,
         _lastname,

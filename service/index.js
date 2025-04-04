@@ -6,116 +6,6 @@ const {
 
 class Perdrix extends Entity {
 
-  /**
-   * 
-   */
-  async customer_list() {
-    const sort_by = this.input.get(Attr.sort_by) || 'nom';
-    const order = this.input.get(Attr.order) || 'asc';
-    const page = this.input.get(Attr.page);
-    let words = this.input.get('words') || '^.*$';
-    let data = await this.db.await_proc('customer_list', { words, sort_by, order, page });
-    this.output.list(data);
-  }
-
-  /**
-   * 
-   */
-  async work_list() {
-    const custId = this.input.get('custId');
-    const siteId = this.input.get('siteId');
-    const status = this.input.get(Attr.status);
-    const page = this.input.get(Attr.page);
-    let data = await this.db.await_proc('work_list', { custId, siteId, page, status });
-    this.debug("AAA:31", JSON.stringify({ custId, page, data }))
-    this.output.list(data);
-  }
-
-  /**
-   * 
-   */
-  async site_list() {
-    const custId = this.input.get('custId');
-    const page = this.input.get(Attr.page);
-    let data = await this.db.await_proc('site_list', { custId, page });
-    this.debug("AAA:42", JSON.stringify({ custId, page, data }))
-    this.output.list(data);
-  }
-
-  /**
-   * 
-   */
-  async customer_create() {
-    let args = this.input.get('args')
-    this.debug("AAA:26", JSON.stringify(args))
-    let data = await this.db.await_proc('customer_create', args);
-    this.output.data(data);
-  }
-
-  /**
-   * 
-   */
-  async site_create() {
-    let args = this.input.get('args')
-    this.debug("AAA:26", JSON.stringify(args))
-    let data = await this.db.await_proc('site_create', args);
-    this.output.data(data);
-  }
-
-  /**
-   * 
-   */
-  async customer_search() {
-    const sort_by = this.input.get(Attr.sort_by) || 'nom';
-    const order = this.input.get(Attr.order) || 'asc';
-    const page = this.input.get(Attr.page);
-    const type = this.input.get(Attr.type);
-    let words = this.input.get('words') || '^.*$';
-    words = `^${words}`;
-    let data = await this.db.await_proc('customer_list', { words, sort_by, order, page, type });
-    this.debug("AAAA:65", { words, sort_by, order, page })
-    console.log("AAA:8888", getUiInfo(), getPluginsInfo())
-    this.output.list(data);
-  }
-
-  /**
-   * 
-   */
-  async customer_get() {
-    const custId = this.input.get('custId');
-    let data = await this.db.await_proc('customer_list', { custId });
-    this.output.list(data);
-  }
-
-  /**
-   * 
-   */
-  async poc_list() {
-    const custId = this.input.get('custId');
-    let data = await this.db.await_proc('poc_list', { custId });
-    this.output.list(data);
-  }
-
-  /**
-   * 
-   */
-  async poc_create() {
-    let args = this.input.get('args')
-    this.debug("AAA:26", JSON.stringify(args))
-    let data = await this.db.await_proc('poc_create', args);
-    this.output.data(data);
-  }
-
-  /**
-   * 
-   */
-  async poc_sites() {
-    const custId = this.input.get('custId');
-    const id = this.input.get(Attr.id);
-    let data = await this.db.await_proc('poc_sites', { custId, id });
-    this.output.list(data);
-  }
-
 
   /**
     * 
@@ -125,12 +15,22 @@ class Perdrix extends Entity {
     let tables = this.input.get('tables');
     const page = this.input.get(Attr.page);
     if (!page) page = 1;
+    let data;
+    if (/^[0-9]+$/.test(words)) {
+      this.debug("AAA:101 waiting for", { words })
+      data = await this.db.await_proc('search_by_id', { words, page }, tables);
+      this.output.list(data);
+      this.debug("AAA:105 Got", { words })
+
+      return
+    }
+
     if (/^.+[\.!]$/.test(words)) {
       words = words.replace(/[\.!]$/, '');
     } else {
       if (!/^.+\*$/.test(words)) words = words + "*";
     }
-    let data = await this.db.await_proc('seo_search', { words, page }, tables);
+    data = await this.db.await_proc('seo_search', { words, page }, tables);
     this.output.list(data);
   }
 

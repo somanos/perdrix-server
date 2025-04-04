@@ -47,49 +47,56 @@ BEGIN
 
   SELECT IFNULL(JSON_VALUE(_args, "$.countrycode"), 'France') INTO  _countrycode;
 
-  SELECT JSON_ARRAY(
-    _housenumber, _streettype, _streetname, _additional, _floor, _room
-  ) INTO _location;
+  SELECT JSON_EXTRACT(_args, "$.location") INTO  _location;
+
+  IF _location IS NULL THEN 
+    SELECT JSON_ARRAY(
+      _housenumber, _streettype, _streetname, _additional, _floor, _room
+    ) INTO _location;
+  END IF;
 
   SELECT JSON_EXTRACT(_args, "$.geometry") INTO _geometry;
 
   SELECT id FROM country WHERE code=_countrycode INTO _ccode;
-
-  INSERT INTO `site` 
-    SELECT NULL,
-      _custId,
-      _location,
-      _postcode,
-      _citycode,
-      _city,
-      _ccode,
-      _geometry,
-      UNIX_TIMESTAMP(),
-      0;
-
-  SELECT max(id) FROM `site` INTO _id;
-  IF(MOD(_id%666, 6) = 0) THEN
+  SELECT site_exists(_args) INTO _id;
+  IF NOT _id THEN 
     INSERT INTO `site` 
-      SELECT _id+1,
-      _custId,
-      _location,
-      _postcode,
-      _citycode,
-      _city,
-      _ccode,
-      _geometry,
-      UNIX_TIMESTAMP(),
-      0;
-    DELETE FROM `site` WHERE id=_id;
-  END IF;
+      SELECT NULL,
+        _custId,
+        _location,
+        _postcode,
+        _citycode,
+        _city,
+        _ccode,
+        _geometry,
+        UNIX_TIMESTAMP(),
+        0;
 
-  SELECT JSON_OBJECT(
-    'id', _id,
-    'table', 'site',
-    'db', 'perdrix'
-  ) INTO _reference;
-  CALL seo_index(_streetname, 'streetName', _reference);
-  CALL seo_index(_city, 'city', _reference);
+    SELECT max(id) FROM `site` INTO _id;
+    IF skip_number(_id) THEN
+      INSERT INTO `site` 
+        SELECT _id+1,
+        _custId,
+        _location,
+        _postcode,
+        _citycode,
+        _city,
+        _ccode,
+        _geometry,
+        UNIX_TIMESTAMP(),
+        0;
+      DELETE FROM `site` WHERE id=_id;
+    END IF;
+
+    SELECT JSON_OBJECT(
+      'id', _id,
+      'table', 'site',
+      'db', 'perdrix'
+    ) INTO _reference;
+    CALL seo_index(_streetname, 'streetName', _reference);
+    CALL seo_index(_city, 'city', _reference);
+  END IF;
+  CALL site_get(_id);
 END$
 
 DELIMITER ;

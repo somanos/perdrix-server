@@ -4,7 +4,6 @@ CREATE TABLE
     `id` int (10) unsigned NOT NULL AUTO_INCREMENT,
     `custId` int (10) unsigned DEFAULT NULL,
     `siteId` int (10) unsigned DEFAULT NULL,
-    `siteType` enum('customer', 'site') DEFAULT 'site',
     `role` varchar(200) DEFAULT NULL,
     `gender` int (10) unsigned DEFAULT NULL,
     `lastname` varchar(200) DEFAULT NULL,

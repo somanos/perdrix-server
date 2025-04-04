@@ -1,12 +1,12 @@
 {
   "services": {
-    "get_env": {
+    "create": {
       "scope": "hub",
       "permission": {
-        "src": "read"
+        "src": "write"
       }
     },
-    "search_location": {
+    "list": {
       "scope": "hub",
       "permission": {
         "src": "read"
@@ -17,16 +17,9 @@
       "permission": {
         "src": "read"
       }
-    },
-    "get_geoloc": {
-      "scope": "hub",
-      "permission": {
-        "src": "read"
-      }
     }
-  },
+ },
   "modules": {
-    "private": "service/pdx_utils",
-    "public": "service/pdx_utils"
+    "private": "service/customer"
   }
 }

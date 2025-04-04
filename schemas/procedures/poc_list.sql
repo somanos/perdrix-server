@@ -27,31 +27,20 @@ BEGIN
     p.phones,
     p.ctime,
     p.active,
-    IF(p.siteType='site',
-      JSON_OBJECT(
-        'countrycode', s.countrycode,
-        'location', s.location,
-        'postcode', s.postcode,
-        'citycode', s.citycode,
-        'city', s.city,
-        'geometry', s.geometry,
-        'ctime', s.ctime
-      ),
-      JSON_OBJECT(
-        'countrycode', c.countrycode,
-        'location', c.location,
-        'postcode', c.postcode,
-        'citycode', c.citycode,
-        'city', c.city,
-        'geometry', c.geometry,
-        'ctime', c.ctime
-      )
-    ) `site`
+    JSON_OBJECT(
+      'countrycode', s.countrycode,
+      'location', s.location,
+      'postcode', s.postcode,
+      'citycode', s.citycode,
+      'city', s.city,
+      'geometry', s.geometry,
+      'ctime', s.ctime
+    )`site`
   FROM poc p
     LEFT JOIN `site` s ON s.custId=p.custId
     LEFT JOIN customer c ON c.id = p.custId
     INNER JOIN gender g ON p.gender = g.id
-    WHERE p.custId = _custId
+    WHERE p.custId = _custId GROUP BY p.id
     LIMIT _offset ,_range;
 END$
 

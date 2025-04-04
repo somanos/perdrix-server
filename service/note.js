@@ -9,7 +9,7 @@ class Poc extends Entity {
    */
   async create() {
     let args = this.input.get('args')
-    let data = await this.db.await_proc('poc_create', args);
+    let data = await this.db.await_proc('note_create', args);
     this.output.data(data);
   }
 
@@ -20,18 +20,8 @@ class Poc extends Entity {
     const custId = this.input.get('custId');
     const page = this.input.get(Attr.page) || 1;
     this.debug("AAA:23",  { custId, page })
-    let data = await this.db.await_proc('poc_list', { custId, page });
+    let data = await this.db.await_proc('note_list', { custId, page });
     this.debug("AAA:23",  data)
-    this.output.list(data);
-  }
-
-  /**
-   * 
-   */
-  async poc_sites() {
-    const custId = this.input.get('custId');
-    const id = this.input.get(Attr.id);
-    let data = await this.db.await_proc('poc_sites', { custId, id });
     this.output.list(data);
   }
 
