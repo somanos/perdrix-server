@@ -50,8 +50,7 @@ BEGIN
 
   SELECT JSON_OBJECT(
     'id', _id,
-    'table', 'note',
-    'db', database()
+    'table', 'note'
   ) INTO _reference;
 
   CALL seo_index(_description, 'workNote', _reference);

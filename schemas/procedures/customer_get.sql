@@ -3,12 +3,9 @@ DELIMITER $
 
 DROP PROCEDURE IF EXISTS `customer_get`$
 CREATE PROCEDURE `customer_get`(
-  IN _args JSON
+  IN _custId INTEGER
 )
 BEGIN  
-
-  DECLARE _custId INTEGER ;
-  SELECT JSON_VALUE(_args, "$.custId") INTO _custId;
 
   SELECT 
     c.id custId, 
@@ -18,7 +15,10 @@ BEGIN
     cc.tag companyclass,
     g.shortTag gender,
     c.location,
-    JSON_VALUE(c.location, "$[2]") street,
+    JSON_VALUE(c.location, "$[0]") housenumber,
+    JSON_VALUE(c.location, "$[1]") streettype,
+    JSON_VALUE(c.location, "$[2]") streetname,
+    JSON_VALUE(c.location, "$[3]") additional,
     c.city,
     c.postcode
   FROM customer c

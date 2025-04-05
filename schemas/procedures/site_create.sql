@@ -90,8 +90,7 @@ BEGIN
 
     SELECT JSON_OBJECT(
       'id', _id,
-      'table', 'site',
-      'db', 'perdrix'
+      'table', 'site'
     ) INTO _reference;
     CALL seo_index(_streetname, 'streetName', _reference);
     CALL seo_index(_city, 'city', _reference);

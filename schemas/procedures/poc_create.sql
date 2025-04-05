@@ -77,8 +77,7 @@ BEGIN
 
   SELECT JSON_OBJECT(
     'id', _id,
-    'table', 'site',
-    'db', database()
+    'table', 'site'
   ) INTO _reference;
 
   CALL seo_index(CONCAT(_lastname, ' ', _firstname), 'poc', _reference);
