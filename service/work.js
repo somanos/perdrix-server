@@ -1,4 +1,5 @@
 const { Entity } = require('@drumee/server-core');
+
 const {
   Attr
 } = require('@drumee/server-essentials');
@@ -7,10 +8,11 @@ class Work extends Entity {
 
   /**
    * 
+   * @returns 
    */
-  async create() {
+  async createWork() {
     let args = this.input.get('args');
-    let {description, category} = args;
+    let { description, category } = args;
     if (!args.siteId) {/** User customer location as site */
       args = await this.db.await_proc('customer_get', args);
       let exists = await this.db.await_func('site_exists', args);
@@ -24,6 +26,14 @@ class Work extends Entity {
     args.description = description;
     args.category = category;
     let data = await this.db.await_proc('work_create', args);
+    return data
+  }
+  
+  /**
+   * 
+   */
+  async create() {
+    let data = await this.createWork();
     this.output.data(data);
   }
 
@@ -38,7 +48,6 @@ class Work extends Entity {
     let data = await this.db.await_proc('work_list', { custId, siteId, page, status });
     this.output.list(data);
   }
-
 }
 
 
