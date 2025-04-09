@@ -17,6 +17,11 @@ class Site extends Entity {
       data = await this.db.await_proc('site_get', exists);
       return this.output.data(data);
     }
+    let {postcode, city } = args;
+    if(!postcode || !city){
+      this.exception.user("REQUIRE_POSTCODE");
+      return
+    }
     data = await this.db.await_proc('site_create', args);
     this.output.data(data);
   }

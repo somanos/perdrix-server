@@ -13,8 +13,8 @@ const { tmp_dir } = sysEnv();
 class Quote extends DrumeeMfs {
 
   /**
- *libreoffice --headless --convert-to odt your-document.xml
- */
+   * 
+   */
   async writeTemplate(tpl_file) {
     const Shelljs = require("shelljs");
     const tpl = resolve(__dirname, TPL_BASE, tpl_file);
@@ -74,6 +74,10 @@ class Quote extends DrumeeMfs {
       opt.filename = `${workId}.odt`;
       opt.ownpath = resolve(opt.ownpath, opt.filename);
       opt.pid = dir.nid;
+      let data = await this.db.await_proc("mfs_get_by_path", opt.ownpath);
+      if (data && data.nid) {
+        opt.replace = 1;
+      }
       return opt;
     }
     return null;
@@ -91,8 +95,14 @@ class Quote extends DrumeeMfs {
       this.output.data({});
       return;
     }
+    let node;
+    if (data.replace) {
+      node = this.replace(data);
+      this.output.data(node);
+      return;
+    }
     this.debug("AAA:93", data);
-    let node = await this.store(data)
+    node = await this.store(data)
     this.debug("AAA:95", node);
     this.output.data(node);
   }

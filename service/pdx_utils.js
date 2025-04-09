@@ -48,9 +48,10 @@ class PerdrixUtils extends Entity {
       return this.output.data({});
     }
     let words = l.join('+');
+    words = words.replace(/ +/g, '+');
     let api_endpoint = Cache.getSysConf('address_api_endpoint');
     let url = api_endpoint.format(words) + `&postcode=${postcode}`;
-    this.debug("AAA:48", { type, id })
+    this.debug("AAA:54", { words, type, id })
     Network.request(url).then(async (data) => {
       let { features } = data || {};
       let res = features[0];

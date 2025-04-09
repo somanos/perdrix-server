@@ -1026,6 +1026,13 @@ class DrumeeMfs extends Mfs {
     node.metadata = metadata;
     await this.after_store({ pid: node.pid, incoming_file, position, node });
     node = await this.db.await_proc("mfs_access_node", this.uid, nid);
+    if (node.filetype == Attr.document) {
+      Document.rebuildInfo(
+        node,
+        this.uid,
+        this.input.get(Attr.socket_id)
+      )
+    }
     return node;
   }
 
