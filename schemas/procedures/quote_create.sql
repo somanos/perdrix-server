@@ -1,8 +1,8 @@
 
 DELIMITER $
 
-DROP PROCEDURE IF EXISTS `noe_create`$
-CREATE PROCEDURE `noe_create`(
+DROP PROCEDURE IF EXISTS `quote_create`$
+CREATE PROCEDURE `quote_create`(
   IN _args JSON
 )
 BEGIN
