@@ -15,14 +15,16 @@ class Quote extends DrumeeMfs {
   /**
    * 
    */
-  async writeTemplate(tpl_file) {
+  async writeTemplate(quote) {
+    const tpl_file = 'quotation.xml';
     const Shelljs = require("shelljs");
     const tpl = resolve(__dirname, TPL_BASE, tpl_file);
-    let { siteId, custId, workId, description } = this.input.get('args')
+    let { custId, workId, description } = this.input.get('args');
+    let work = await this.db.await_proc('work_get', workId);
+    if (!description) description = work.description;
     const {
       custName, housenumber, streettype, streetname, additional, postcode, city
     } = await this.db.await_proc('customer_get', custId);
-    const site = await this.db.await_proc('site_get', siteId);
     let view = {
       date: new Date(new Date().getTime()).toLocaleDateString(this.input.language()),
       custName,
@@ -30,11 +32,12 @@ class Quote extends DrumeeMfs {
       streettype,
       streetname,
       description,
-      quoteId: 9999,
       additional,
       postcode,
-      city
+      city,
+      ...quote
     }
+    console.log({ view })
     let year = new Date().getFullYear();
     let opt = {
       hub_id: this.hub.get(Attr.id),
@@ -52,7 +55,7 @@ class Quote extends DrumeeMfs {
     let content = Mustache.render(tpl_str, view);
     let base = this.randomString() + "-quotation";
     const xml_file = resolve(tmp_dir, `${base}.xml`);
-    this.debug("AAA:23", { tpl, view, site, content, xml_file })
+    this.debug("AAA:23", { tpl, view, content, xml_file })
 
     writeFileSync(xml_file, content, { encoding: "utf-8" });
     Shelljs.env["HOME"] = tmp_dir;
@@ -71,7 +74,8 @@ class Quote extends DrumeeMfs {
       hash.update(chunk);
       opt.md5Hash = hash.digest("hex");
       opt.parent = dir;
-      opt.filename = `${workId}.odt`;
+      opt.filename = `${quote.chrono}.odt`;
+      opt.filetype = Attr.document
       opt.ownpath = resolve(opt.ownpath, opt.filename);
       opt.pid = dir.nid;
       let data = await this.db.await_proc("mfs_get_by_path", opt.ownpath);
@@ -88,9 +92,16 @@ class Quote extends DrumeeMfs {
    */
   async create() {
     let args = this.input.get('args');
-    this.debug("AAA:86", args);
-    this.output.data(args);
-    let data = await this.writeTemplate('quotation.xml');
+    let work = await this.db.await_proc('work_get', args.workId);
+    let site = await this.db.await_proc('site_get', args.siteId);
+    let customer = await this.db.await_proc('customer_get', args.custId);
+    let quote = await this.db.await_proc('quote_create', args);
+    this.debug("AAA:86", { args, work, site, customer, quote}, JSON.stringify(args));
+    if(!quote){
+      this.exception.server("FAILED_TO_CREATE");
+      return
+    }
+    let data = await this.writeTemplate(quote);
     if (!data || !data.incoming_file) {
       this.output.data({});
       return;
@@ -104,7 +115,7 @@ class Quote extends DrumeeMfs {
     this.debug("AAA:93", data);
     node = await this.store(data)
     this.debug("AAA:95", node);
-    this.output.data(node);
+    this.output.data(args);
   }
 
   /**
