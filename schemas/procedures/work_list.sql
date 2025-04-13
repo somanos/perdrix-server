@@ -59,7 +59,9 @@ BEGIN
       'city', s.city,
       'geometry', s.geometry,
       'ctime', s.ctime,
-      'statut', s.statut
+      'statut', s.statut,
+      'siteId', s.id,
+      'id', s.id
     ) `site`
   FROM work w
     LEFT JOIN quotation q ON w.custId=q.custId and w.id=q.workId

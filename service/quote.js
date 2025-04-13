@@ -95,9 +95,13 @@ class Quote extends DrumeeMfs {
     let work = await this.db.await_proc('work_get', args.workId);
     let site = await this.db.await_proc('site_get', args.siteId);
     let customer = await this.db.await_proc('customer_get', args.custId);
+    for (let name of ['ht', 'ttc', 'tva', 'discount']) {
+      args[name] = args[name] || 0;
+    }
+
     let quote = await this.db.await_proc('quote_create', args);
-    this.debug("AAA:86", { args, work, site, customer, quote}, JSON.stringify(args));
-    if(!quote){
+    this.debug("AAA:99", { args, work, site, customer, quote }, JSON.stringify(args));
+    if (!quote) {
       this.exception.server("FAILED_TO_CREATE");
       return
     }
