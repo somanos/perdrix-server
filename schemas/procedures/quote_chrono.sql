@@ -3,7 +3,7 @@ DELIMITER $
 
 DROP FUNCTION IF EXISTS `quote_chrono`$
 CREATE FUNCTION `quote_chrono`(
-  IN _siteId INTEGER
+  IN _workId INTEGER
 )
 RETURNS VARCHAR(120) DETERMINISTIC
 BEGIN
@@ -13,7 +13,9 @@ BEGIN
   DECLARE _chrono VARCHAR(200);
   DECLARE _count INTEGER DEFAULT 0;
 
-  SELECT chrono FROM quotation WHERE siteId=_siteId INTO _chrono;
+  SELECT chrono FROM quotation WHERE workId=_workId 
+    ORDER BY ctime DESC LIMIT 1
+    INTO _chrono;
   IF _chrono IS NULL THEN 
     SELECT DATE_FORMAT(now(), "%y") INTO _fiscal_year;
     SELECT REGEXP_REPLACE(chrono,'^[0-9]{2,2}\.|[A-Z]{1,1}$', '')

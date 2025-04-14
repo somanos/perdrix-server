@@ -10,6 +10,8 @@ BEGIN
   DECLARE _offset bigint;
   DECLARE _sort_by VARCHAR(20) DEFAULT 'name';
   DECLARE _order VARCHAR(20) DEFAULT 'asc';
+  DECLARE _hub_id VARCHAR(20);
+
   DECLARE _page INTEGER DEFAULT 1;
   DECLARE _custId INTEGER ;
   DECLARE _siteId INTEGER ;
@@ -37,6 +39,8 @@ BEGIN
     INSERT INTO _filter SELECT DISTINCT `status` FROM work;
   END IF;
 
+  SELECT id FROM yp.entity WHERE db_name=database() INTO _hub_id;
+
   SELECT
     w.*,
     q.id quoteId,
@@ -48,7 +52,9 @@ BEGIN
       'tva', q.tva,
       'ttc', q.ttc,
       'discount', q.discount,
-      'folderId', q.folderId,
+      'nid', q.folderId,
+      'hub_id', _hub_id,
+      'filepath', filepath(q.folderId),
       'ctime', q.ctime,
       'status', q.status
     ) `quote`,
@@ -64,11 +70,12 @@ BEGIN
       'id', s.id
     ) `site`
   FROM work w
-    LEFT JOIN quotation q ON w.custId=q.custId and w.id=q.workId
+    LEFT JOIN quotation q ON w.custId=q.custId AND w.id=q.workId
     INNER JOIN `site` s ON s.custId=w.custId AND w.siteId=s.id
     INNER JOIN `workType` t ON t.id=w.category
     INNER JOIN `_filter` f ON f.val=w.status
     WHERE w.custId=_custId
+    ORDER BY q.chrono DESC
     LIMIT _offset ,_range;
 END$
 

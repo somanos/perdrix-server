@@ -58,14 +58,14 @@ const {
 } = require("lodash");
 
 const {
-  data_dir, tmp_dir, server_location, mfs_dir, quota
+  data_dir, tmp_dir, server_home, mfs_dir, quota
 } = sysEnv();
 const { stringify } = JSON;
 const { join, resolve, dirname, basename } = require("path");
 const Spawn = require("child_process").spawn;
 const DATA_ROOT = new RegExp(`^${data_dir}`);
 const SPAWN_OPT = { detached: true, stdio: ["ignore", "ignore", "ignore"] };
-const OFFLINE_DIR = resolve(server_location, "offline", "media");
+const OFFLINE_DIR = resolve(server_home, "offline", "media");
 
 class DrumeeMfs extends Mfs {
   /**

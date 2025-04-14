@@ -37,7 +37,6 @@ class Quote extends DrumeeMfs {
       city,
       ...quote
     }
-    console.log({ view })
     let year = new Date().getFullYear();
     let opt = {
       hub_id: this.hub.get(Attr.id),
@@ -48,20 +47,18 @@ class Quote extends DrumeeMfs {
     if (isEmpty(dir) || !dir.nid) {
       return;
     }
-    this.debug("AAA:44", this.home_id)
 
     let tpl_str = readFileSync(tpl);
     tpl_str = String(tpl_str).trim().toString();
     let content = Mustache.render(tpl_str, view);
     let base = this.randomString() + "-quotation";
     const xml_file = resolve(tmp_dir, `${base}.xml`);
-    this.debug("AAA:23", { tpl, view, content, xml_file })
 
     writeFileSync(xml_file, content, { encoding: "utf-8" });
     Shelljs.env["HOME"] = tmp_dir;
-    let cmd = `/usr/bin/libreoffice --headless --convert-to odt --outdir ${tmp_dir} ${xml_file}`;
+    let cmd = `/usr/bin/libreoffice --headless --convert-to docx --outdir ${tmp_dir} ${xml_file}`;
     if (Shelljs.exec(cmd)) {
-      let file = resolve(tmp_dir, `${base}.odt`);
+      let file = resolve(tmp_dir, `${base}.docx`);
       if (!existsSync(file)) {
         return null;
       }
@@ -74,13 +71,14 @@ class Quote extends DrumeeMfs {
       hash.update(chunk);
       opt.md5Hash = hash.digest("hex");
       opt.parent = dir;
-      opt.filename = `${quote.chrono}.odt`;
+      opt.filename = `dev${quote.chrono}.docx`;
       opt.filetype = Attr.document
       opt.ownpath = resolve(opt.ownpath, opt.filename);
       opt.pid = dir.nid;
       let data = await this.db.await_proc("mfs_get_by_path", opt.ownpath);
       if (data && data.nid) {
         opt.replace = 1;
+        opt.nid = data.nid;
       }
       return opt;
     }
@@ -92,34 +90,32 @@ class Quote extends DrumeeMfs {
    */
   async create() {
     let args = this.input.get('args');
-    let work = await this.db.await_proc('work_get', args.workId);
-    let site = await this.db.await_proc('site_get', args.siteId);
-    let customer = await this.db.await_proc('customer_get', args.custId);
+    // let work = await this.db.await_proc('work_get', args.workId);
+    // let site = await this.db.await_proc('site_get', args.siteId);
+    // let customer = await this.db.await_proc('customer_get', args.custId);
     for (let name of ['ht', 'ttc', 'tva', 'discount']) {
       args[name] = args[name] || 0;
     }
 
     let quote = await this.db.await_proc('quote_create', args);
-    this.debug("AAA:99", { args, work, site, customer, quote }, JSON.stringify(args));
-    if (!quote) {
-      this.exception.server("FAILED_TO_CREATE");
+    if (!quote || !quote.workId || !quote.chrono) {
+      this.exception.server("QUOTE_FAILED");
       return
     }
     let data = await this.writeTemplate(quote);
     if (!data || !data.incoming_file) {
-      this.output.data({});
+      this.exception.server("QUOTE_TEMPLATE_FAILED");
       return;
     }
     let node;
     if (data.replace) {
-      node = this.replace(data);
-      this.output.data(node);
-      return;
+      node = await this.replace(data);
+    } else {
+      node = await this.store(data)
     }
-    this.debug("AAA:93", data);
-    node = await this.store(data)
-    this.debug("AAA:95", node);
-    this.output.data(args);
+    await this.db.await_proc('quote_update', { folderId: node.nid, id: quote.id});
+    let work = await this.db.await_proc('work_details', quote.workId);
+    this.output.data(work);
   }
 
   /**
