@@ -524,7 +524,7 @@ class DrumeeMfs extends Mfs {
     }
 
     let parent_of = await this.db.await_func("is_parent_of", parent.nid, pid);
-    this.debug("AAA:527", parent_of,parent,  parent.nid, pid)
+    this.debug("AAA:527", parent_of, parent, parent.nid, pid)
     if (!parent_of && parent.nid != pid) {
       error = `WRONG_FILEPATH`;
       this.exception.server(error);
@@ -1071,6 +1071,65 @@ class DrumeeMfs extends Mfs {
       node
     );
     this.output.data({ ...node, ...attr, replace: 1 });
+  }
+
+  /**
+   * 
+   */
+  async writeTemplate(view, args) {
+    let { tpl_file, dest_dir } = args;
+    //const tpl_file = 'quotation.xml';
+    const Shelljs = require("shelljs");
+    const TPL_BASE = "../../templates";
+
+    const tpl = resolve(__dirname, TPL_BASE, tpl_file);
+
+    let year = new Date().getFullYear();
+    let opt = {
+      hub_id: this.hub.get(Attr.id),
+      pid: this.home_id,
+      ownpath: join(dest_dir, year)
+    }
+    let dir = await this.make_dir(opt);
+    if (isEmpty(dir) || !dir.nid) {
+      return;
+    }
+
+    let tpl_str = readFileSync(tpl);
+    tpl_str = String(tpl_str).trim().toString();
+    let content = Mustache.render(tpl_str, view);
+    let base = this.randomString() + "-quotation";
+    const xml_file = resolve(tmp_dir, `${base}.xml`);
+
+    writeFileSync(xml_file, content, { encoding: "utf-8" });
+    Shelljs.env["HOME"] = tmp_dir;
+    let cmd = `/usr/bin/libreoffice --headless --convert-to docx --outdir ${tmp_dir} ${xml_file}`;
+    if (Shelljs.exec(cmd)) {
+      let file = resolve(tmp_dir, `${base}.docx`);
+      if (!existsSync(file)) {
+        return null;
+      }
+      opt.incoming_file = file;
+      const { size } = statSync(file, { throwIfNoEntry: false });
+      opt.filesize = size;
+      let content = readFileSync(file);
+      let hash = createHash("md5");
+      let chunk = Buffer.from(content, "utf8");
+      hash.update(chunk);
+      opt.md5Hash = hash.digest("hex");
+      opt.parent = dir;
+      opt.filename = `dev${data.chrono}.docx`;
+      opt.filetype = Attr.document
+      opt.ownpath = resolve(opt.ownpath, opt.filename);
+      opt.pid = dir.nid;
+      let data = await this.db.await_proc("mfs_get_by_path", opt.ownpath);
+      if (data && data.nid) {
+        opt.replace = 1;
+        opt.nid = data.nid;
+      }
+      return opt;
+    }
+    return null;
   }
 
 }

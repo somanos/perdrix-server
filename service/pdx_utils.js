@@ -29,6 +29,9 @@ class PerdrixUtils extends Entity {
       data.workType = await this.db.await_query(
         "SELECT tag label, id FROM workType"
       );
+      data.billType = await this.db.await_query(
+        "SELECT tag label, id FROM billType"
+      );
       data.pocRoles = await this.db.await_query(
         'SELECT DISTINCT role label, role FROM poc'
       );
@@ -47,15 +50,17 @@ class PerdrixUtils extends Entity {
     if (!l.length || !postcode || postcode.length < 5) {
       return this.output.data({});
     }
+    if(l[0]){
+      l[0] = l[0].replace(/[\-\/][0-9]+$/, '');
+    }
     let words = l.join('+');
     words = words.replace(/ +/g, '+');
     let api_endpoint = Cache.getSysConf('address_api_endpoint');
     let url = api_endpoint.format(words) + `&postcode=${postcode}`;
-    this.debug("AAA:54", { words, type, id })
+    this.debug("AAA:54", { words, type, id, url })
     Network.request(url).then(async (data) => {
       let { features } = data || {};
       let res = features[0];
-      this.debug("AAA:51", features);
       if (res && res.geometry) {
         await this.db.await_proc('update_geo', id, type, res.geometry)
       }
@@ -94,9 +99,9 @@ class PerdrixUtils extends Entity {
     this.output.list(data);
   }
 
-/**
-  * 
-  */
+  /**
+    * 
+    */
   async search_location() {
     let words = this.input.get('words') || 'nom';
     words = words.replace(/ +/g, '+');

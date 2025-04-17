@@ -21,6 +21,10 @@ BEGIN
   DECLARE _room VARCHAR(10) DEFAULT "";
   DECLARE _other VARCHAR(512) DEFAULT "";
 
+  IF JSON_TYPE(_args) IS NULL THEN
+    RETURN 0;
+  END IF;
+  
   SELECT JSON_VALUE(_args, "$.postcode") INTO _postcode;
   SELECT JSON_EXTRACT(_args, "$.location") INTO _location;
   SELECT JSON_VALUE(_args, "$.custId") INTO _custId;

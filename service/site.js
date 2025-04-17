@@ -12,7 +12,6 @@ class Site extends Entity {
     let args = this.input.get('args');
     let exists = await this.db.await_func('site_exists', args);
     let data;
-    this.debug("AAA:26", exists, JSON.stringify(args))
     if(exists){
       data = await this.db.await_proc('site_get', exists);
       return this.output.data(data);

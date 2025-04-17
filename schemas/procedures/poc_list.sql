@@ -13,6 +13,7 @@ BEGIN
 
   SELECT IFNULL(JSON_VALUE(_args, "$.page"), 1) INTO _page;
   SELECT JSON_VALUE(_args, "$.custId") INTO _custId;
+  SELECT IFNULL(JSON_VALUE(_args, "$.pagelength"), 45) INTO @rows_per_page;  
   CALL yp.pageToLimits(_page, _offset, _range);
 
   SELECT
@@ -27,6 +28,7 @@ BEGIN
     p.phones,
     p.ctime,
     p.active,
+    _page `page`,
     JSON_OBJECT(
       'countrycode', s.countrycode,
       'location', s.location,

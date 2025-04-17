@@ -1,7 +1,9 @@
 
 const { Mariadb } = require('@drumee/server-essentials');
 const { exit, env } = process;
-const Perdrix = new Mariadb({ name: 'perdrix', user: "root" });
+const args = require("./args");
+
+const Perdrix = new Mariadb({ name: args.db, user: "root" });
 const { basename, extname, join } = require('path');
 
 const {

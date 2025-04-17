@@ -10,10 +10,11 @@ BEGIN
   DECLARE _offset bigint;
   DECLARE _page INTEGER DEFAULT 1;
   DECLARE _custId INTEGER ;
-  DECLARE _order VARCHAR(20) DEFAULT 'asc';
+  DECLARE _order VARCHAR(20) DEFAULT 'desc';
 
   SELECT IFNULL(JSON_VALUE(_args, "$.order"), 'desc') INTO _order;
   SELECT IFNULL(JSON_VALUE(_args, "$.page"), 1) INTO _page;
+  SELECT IFNULL(JSON_VALUE(_args, "$.pagelength"), 45) INTO @rows_per_page;
 
   SELECT JSON_VALUE(_args, "$.custId") INTO _custId;
   CALL yp.pageToLimits(_page, _offset, _range);
@@ -25,9 +26,11 @@ BEGIN
     n.siteId,
     n.description,
     n.ctime,
-    n.folderId,
+    n.docId,
     t.tag workType,
+    _page `page`,
     JSON_OBJECT(
+      'id', s.id,
       'countrycode', s.countrycode,
       'location', s.location,
       'postcode', s.postcode,
@@ -37,6 +40,7 @@ BEGIN
       'ctime', s.ctime
     ) `site`,
     JSON_OBJECT(
+      'id', w.id,
       'description', w.description,
       'ctime', w.ctime
     ) `work`

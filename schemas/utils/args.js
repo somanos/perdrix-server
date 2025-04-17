@@ -7,15 +7,19 @@ const parser = new argparse.ArgumentParser({
 
 parser.addArgument("--source", {
 	type: String,
-	defaultValue: "../data/tirage.csv",
 	help: "Source de tirage",
 });
 
 parser.addArgument("--output", {
 	type: String,
-	defaultValue: 0,
 	help: "Output file ",
 });
+parser.addArgument("--db", {
+	type: String,
+	required: true,
+	help: "Target db name ",
+});
+
 
 
 const args = parser.parseArgs();

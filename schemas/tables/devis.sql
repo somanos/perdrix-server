@@ -12,7 +12,7 @@ CREATE TABLE
     tva DECIMAL(10, 2),
     ttc DECIMAL(10, 2),
     remis DECIMAL(10, 2),
-    folderId VARCHAR(80) CHARACTER SET ascii COLLATE ascii_general_ci,
+    docId VARCHAR(80) CHARACTER SET ascii COLLATE ascii_general_ci,
     ctime INT (11) UNSIGNED,
     statut INTEGER UNSIGNED,
     PRIMARY KEY (`id`),

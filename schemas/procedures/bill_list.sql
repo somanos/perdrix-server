@@ -1,8 +1,8 @@
 
 DELIMITER $
 
-DROP PROCEDURE IF EXISTS `work_list`$
-CREATE PROCEDURE `work_list`(
+DROP PROCEDURE IF EXISTS `bill_list`$
+CREATE PROCEDURE `bill_list`(
   IN _args JSON
 )
 BEGIN
@@ -37,29 +37,29 @@ BEGIN
       SELECT _i + 1 INTO _i;
     END WHILE;
   ELSE 
-    INSERT INTO _filter SELECT DISTINCT `status` FROM work;
+    INSERT INTO _filter SELECT DISTINCT `status` FROM bill;
   END IF;
 
   SELECT id FROM yp.entity WHERE db_name=database() INTO _hub_id;
 
   SELECT
     w.*,
-    q.id quoteId,
+    b.id billId,
     t.tag `type`,
     _page `page`,
     JSON_OBJECT(
-      'chrono', q.chrono,
-      'description', q.description,
-      'ht', q.ht,
-      'tva', q.tva,
-      'ttc', q.ttc,
-      'discount', q.discount,
-      'nid', q.docId,
+      'id', b.id,
+      'chrono', b.chrono,
+      'description', b.description,
+      'ht', b.ht,
+      'tva', b.tva,
+      'ttc', b.ttc,
+      'nid', b.docId,
       'hub_id', _hub_id,
-      'filepath', filepath(q.docId),
-      'ctime', q.ctime,
-      'status', q.status
-    ) `quote`,
+      'filepath', filepath(b.docId),
+      'ctime', b.ctime,
+      'status', b.status
+    ) `bill`,
     JSON_OBJECT(
       'countrycode', s.countrycode,
       'location', s.location,
@@ -72,12 +72,12 @@ BEGIN
       'id', s.id
     ) `site`
   FROM work w
-    LEFT JOIN quotation q ON w.custId=q.custId AND w.id=q.workId
+    LEFT JOIN bill b ON w.custId=b.custId AND w.id=b.workId
     INNER JOIN `site` s ON s.custId=w.custId AND w.siteId=s.id
-    INNER JOIN `_filter` f ON f.val=w.status
+    INNER JOIN `_filter` f ON f.val=b.status
     LEFT JOIN `workType` t ON t.id=w.category
     WHERE w.custId=_custId
-    ORDER BY w.ctime DESC
+    ORDER BY b.ctime DESC
     LIMIT _offset ,_range;
 END$
 

@@ -6,7 +6,8 @@ CREATE PROCEDURE `work_details`(
   IN _workId INTEGER
 )
 BEGIN
-
+  DECLARE _hub_id VARCHAR(16) ;
+  SELECT id FROM yp.entity WHERE db_name=DATABASE();
   SELECT
     w.*,
     q.id quoteId,
@@ -18,9 +19,9 @@ BEGIN
       'tva', q.tva,
       'ttc', q.ttc,
       'discount', q.discount,
-      'nid', q.folderId,
+      'nid', q.docId,
       'hub_id', _hub_id,
-      'filepath', filepath(q.folderId),
+      'filepath', filepath(q.docId),
       'ctime', q.ctime,
       'status', q.status
     ) `quote`,

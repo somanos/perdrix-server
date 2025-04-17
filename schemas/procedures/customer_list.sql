@@ -17,12 +17,14 @@ BEGIN
   SELECT IFNULL(JSON_VALUE(_args, "$.sort_by"), 'name') INTO _sort_by;
   SELECT IFNULL(JSON_VALUE(_args, "$.order"), 'asc') INTO _order;
   SELECT IFNULL(JSON_VALUE(_args, "$.page"), 1) INTO _page;
+  SELECT IFNULL(JSON_VALUE(_args, "$.pagelength"), 45) INTO @rows_per_page;
   SELECT IFNULL(JSON_VALUE(_args, "$.words"), '.+') INTO _words;
   CALL yp.pageToLimits(_page, _offset, _range);  
 
   SELECT 
     c.id custId, 
     IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))) custName,
+    _page `page`,
     c.ctime,
     c.category,
     cc.tag companyclass,

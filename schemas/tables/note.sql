@@ -7,6 +7,6 @@ CREATE TABLE
     travauxId INTEGER UNSIGNED,
     ctime INT (11) UNSIGNED,
     description TEXT,
-    folderId VARCHAR(1000),
+    docId VARCHAR(1000),
     PRIMARY KEY (`id`)
   );

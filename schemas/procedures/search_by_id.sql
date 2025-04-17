@@ -97,7 +97,7 @@ BEGIN
         'val_tva', q.ttc-q.ht,
         'ttc', q.ttc,
         'discount', q.discount,
-        'folderId', q.folderId,
+        'docId', q.docId,
         'ctime', q.ctime,
         'statut', q.status
       ) content,
