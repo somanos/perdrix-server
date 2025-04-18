@@ -46,8 +46,10 @@ BEGIN
     w.*,
     q.id quoteId,
     t.tag `type`,
+    t.tag `workType`,
     _page `page`,
     JSON_OBJECT(
+      'custId', w.custId,
       'chrono', q.chrono,
       'description', q.description,
       'ht', q.ht,
@@ -61,6 +63,7 @@ BEGIN
       'status', q.status
     ) `quote`,
     JSON_OBJECT(
+      'custId', w.custId,
       'countrycode', s.countrycode,
       'location', s.location,
       'postcode', s.postcode,

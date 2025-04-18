@@ -123,6 +123,7 @@ class Bill extends DrumeeMfs {
     const custId = this.input.get('custId');
     const status = this.input.get(Attr.status);
     const page = this.input.get(Attr.page);
+    this.debug("AAA:126", JSON.stringify({ custId, page, status }))
     let data = await this.db.await_proc('bill_list', { custId, page, status });
     this.output.list(data);
   }

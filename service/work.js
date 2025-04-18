@@ -49,6 +49,7 @@ class Work extends Entity {
     const siteId = this.input.get('siteId');
     const status = this.input.get(Attr.status);
     const page = this.input.get(Attr.page);
+    this.debug("AAA:52", JSON.stringify({ custId, siteId, page, status }))
     let data = await this.db.await_proc('work_list', { custId, siteId, page, status });
     this.output.list(data);
   }

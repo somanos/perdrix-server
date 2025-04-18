@@ -44,11 +44,14 @@ BEGIN
 
   SELECT
     w.*,
+    w.id workId,
     b.id billId,
     t.tag `type`,
+    t.tag `workType`,
     _page `page`,
     JSON_OBJECT(
       'id', b.id,
+      'custId', w.custId,
       'chrono', b.chrono,
       'description', b.description,
       'ht', b.ht,
@@ -61,6 +64,7 @@ BEGIN
       'status', b.status
     ) `bill`,
     JSON_OBJECT(
+      'custId', w.custId,
       'countrycode', s.countrycode,
       'location', s.location,
       'postcode', s.postcode,
@@ -74,7 +78,7 @@ BEGIN
   FROM work w
     LEFT JOIN bill b ON w.custId=b.custId AND w.id=b.workId
     INNER JOIN `site` s ON s.custId=w.custId AND w.siteId=s.id
-    INNER JOIN `_filter` f ON f.val=b.status
+    -- INNER JOIN `_filter` f ON f.val=b.status
     LEFT JOIN `workType` t ON t.id=w.category
     WHERE w.custId=_custId
     ORDER BY b.ctime DESC
