@@ -7,7 +7,7 @@ CREATE PROCEDURE `work_details`(
 )
 BEGIN
   DECLARE _hub_id VARCHAR(16) ;
-  SELECT id FROM yp.entity WHERE db_name=DATABASE();
+  SELECT id FROM yp.entity WHERE db_name=DATABASE() INTO _hub_id;
   SELECT
     w.*,
     q.id quoteId,
