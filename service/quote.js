@@ -113,7 +113,7 @@ class Quote extends DrumeeMfs {
     } else {
       node = await this.store(data)
     }
-    await this.db.await_proc('quote_update', { folderId: node.nid, id: quote.id});
+    await this.db.await_proc('quote_update', { docId: node.nid, id: quote.id});
     let work = await this.db.await_proc('work_details', quote.workId);
     this.output.data(work);
   }
