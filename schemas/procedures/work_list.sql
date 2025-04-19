@@ -64,6 +64,20 @@ BEGIN
     ) `quote`,
     JSON_OBJECT(
       'custId', w.custId,
+      'chrono', b.chrono,
+      'description', q.description,
+      'ht', b.ht,
+      'tva', b.tva,
+      'ttc', b.ttc,
+      'nid', b.docId,
+      'hub_id', _hub_id,
+      'filepath', filepath(b.docId),
+      'ctime', b.ctime,
+      'status', b.status,
+      'category', b.category
+    ) `bill`,
+    JSON_OBJECT(
+      'custId', w.custId,
       'countrycode', s.countrycode,
       'location', s.location,
       'postcode', s.postcode,
@@ -76,10 +90,11 @@ BEGIN
     ) `site`
   FROM work w
     LEFT JOIN quotation q ON w.custId=q.custId AND w.id=q.workId
+    LEFT JOIN bill b ON w.custId=b.custId AND w.id=b.workId
     INNER JOIN `site` s ON s.custId=w.custId AND w.siteId=s.id
     INNER JOIN `_filter` f ON f.val=w.status
     LEFT JOIN `workType` t ON t.id=w.category
-    WHERE w.custId=_custId
+    WHERE w.custId=_custId AND IFNULL(_siteId, w.siteId)=w.siteId
     ORDER BY w.ctime DESC
     LIMIT _offset ,_range;
 END$

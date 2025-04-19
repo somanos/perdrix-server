@@ -30,9 +30,10 @@ class Site extends Entity {
    */
   async list() {
     const custId = this.input.get('custId');
+    const siteId = this.input.get('siteId');
     const page = this.input.get(Attr.page);
-    let data = await this.db.await_proc('site_list', { custId, page });
-    this.debug("AAA:42", JSON.stringify({ custId, page, data }))
+    let data = await this.db.await_proc('site_list', { siteId, custId, page });
+    this.debug("AAA:42", JSON.stringify({ custId, page, siteId }))
     this.output.list(data);
   }
 
