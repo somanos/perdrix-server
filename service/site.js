@@ -12,12 +12,12 @@ class Site extends Entity {
     let args = this.input.get('args');
     let exists = await this.db.await_func('site_exists', args);
     let data;
-    if(exists){
+    if (exists) {
       data = await this.db.await_proc('site_get', exists);
       return this.output.data(data);
     }
-    let {postcode, city } = args;
-    if(!postcode || !city){
+    let { postcode, city } = args;
+    if (!postcode || !city) {
       this.exception.user("REQUIRE_POSTCODE");
       return
     }
@@ -32,8 +32,11 @@ class Site extends Entity {
     const custId = this.input.get('custId');
     const siteId = this.input.get('siteId');
     const page = this.input.get(Attr.page);
-    let data = await this.db.await_proc('site_list', { siteId, custId, page });
-    this.debug("AAA:42", JSON.stringify({ custId, page, siteId }))
+    const filter = this.input.get('filter');
+    let opt = { custId, page, siteId };
+    if (filter) opt.filter = filter;
+    this.debug("AAA:42", JSON.stringify(opt))
+    let data = await this.db.await_proc('site_list', opt);
     this.output.list(data);
   }
 

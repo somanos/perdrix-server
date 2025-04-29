@@ -66,9 +66,11 @@ class Work extends Entity {
   async list() {
     const custId = this.input.get('custId');
     const siteId = this.input.get('siteId');
+    const filter = this.input.get('filter');
     const status = this.input.get(Attr.status);
     const page = this.input.get(Attr.page);
     let opt = { custId, page, status };
+    if (filter) opt.filter = filter;
     if (!nullValue(siteId)) {
       opt.siteId = siteId;
     }
@@ -91,7 +93,6 @@ class Work extends Entity {
   async bills() {
     const workId = this.input.get('workId');
     const page = this.input.get(Attr.page) || 1;
-    this.debug("AAA:95", JSON.stringify({ workId, page }))
     let data = await this.db.await_proc('work_bills', { workId, page });
     this.output.list(data);
   }
@@ -115,8 +116,6 @@ class Work extends Entity {
     let data = await this.db.await_proc('work_quotations', { workId, page });
     this.output.list(data);
   }
-
-
 
 }
 

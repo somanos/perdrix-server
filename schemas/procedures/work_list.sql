@@ -15,67 +15,54 @@ BEGIN
   DECLARE _page INTEGER DEFAULT 1;
   DECLARE _custId INTEGER ;
   DECLARE _siteId INTEGER ;
-  DECLARE _status JSON ;
+  DECLARE _filter JSON ;
   DECLARE _words TEXT;
   DECLARE _i TINYINT(6) unsigned DEFAULT 0;
 
 
-  SELECT IFNULL(JSON_VALUE(_args, "$.sort_by"), 'name') INTO _sort_by;
+  SELECT IFNULL(JSON_VALUE(_args, "$.sort_by"), 'date') INTO _sort_by;
   SELECT IFNULL(JSON_VALUE(_args, "$.order"), 'asc') INTO _order;
+
   SELECT IFNULL(JSON_VALUE(_args, "$.page"), 1) INTO _page;
-  SELECT IFNULL(JSON_VALUE(_args, "$.pagelength"), 45) INTO @rows_per_page;  
-  SELECT JSON_EXTRACT(_args, "$.status") INTO _status;
+  SELECT IFNULL(JSON_VALUE(_args, "$.pagelength"), 45) INTO @rows_per_page;
+
+  SELECT JSON_EXTRACT(_args, "$.filter") INTO _filter;
   SELECT JSON_VALUE(_args, "$.custId") INTO _custId;
   SELECT JSON_VALUE(_args, "$.siteId") INTO _siteId;
-  CALL yp.pageToLimits(_page, _offset, _range);
-
-  DROP TABLE IF EXISTS _filter;
-  CREATE TEMPORARY TABLE _filter ( val INTEGER);
-  IF JSON_TYPE(_status) = 'ARRAY' AND JSON_LENGTH(_status)>0 THEN 
-    WHILE _i < JSON_LENGTH(_status) DO 
-      INSERT INTO _filter SELECT JSON_VALUE(_status, CONCAT("$[", _i, "]"));
-      SELECT _i + 1 INTO _i;
-    END WHILE;
-  ELSE 
-    INSERT INTO _filter SELECT DISTINCT `status` FROM work;
-  END IF;
-
   SELECT id FROM yp.entity WHERE db_name=database() INTO _hub_id;
 
-  SELECT
+  CALL yp.pageToLimits(_page, _offset, _range);
+
+  DROP TABLE IF EXISTS _view;
+  CREATE TEMPORARY TABLE _view LIKE work;
+  ALTER TABLE _view ADD column city VARCHAR(200);
+  ALTER TABLE _view ADD column quoteId INTEGER;
+  ALTER TABLE _view ADD column `type` VARCHAR(100);
+  ALTER TABLE _view ADD column `workType` VARCHAR(100);
+  ALTER TABLE _view ADD column `page` BIGINT;
+  ALTER TABLE _view ADD column `site` JSON;
+  SET @stm = "ORDER BY";
+  IF JSON_TYPE(_filter) = 'ARRAY' AND JSON_LENGTH(_filter)>0 THEN 
+    WHILE _i < JSON_LENGTH(_filter) DO 
+      SELECT JSON_EXTRACT(_filter, CONCAT("$[", _i, "]")) INTO @r;
+      SELECT JSON_VALUE(@r, "$.name") INTO @_name;
+      SELECT JSON_VALUE(@r, "$.value") INTO @_value;
+      SELECT CONCAT(@stm, " ", @_name, " ", @_value) INTO @stm;
+      IF(_i < JSON_LENGTH(_filter) - 1) THEN
+        SELECT CONCAT(@stm, ",") INTO @stm;
+      END IF;
+      SELECT _i + 1 INTO _i;
+    END WHILE;
+  ELSE
+    SELECT CONCAT(@stm, " ", "ctime desc") INTO @stm;
+  END IF;
+  INSERT INTO _view SELECT
     w.*,
+    s.city,
     q.id quoteId,
     t.tag `type`,
     t.tag `workType`,
     _page `page`,
-    JSON_OBJECT(
-      'custId', w.custId,
-      'chrono', q.chrono,
-      'description', q.description,
-      'ht', q.ht,
-      'tva', q.tva,
-      'ttc', q.ttc,
-      'discount', q.discount,
-      'nid', q.docId,
-      'hub_id', _hub_id,
-      'filepath', filepath(q.docId),
-      'ctime', q.ctime,
-      'status', q.status
-    ) `quote`,
-    JSON_OBJECT(
-      'custId', w.custId,
-      'chrono', b.chrono,
-      'description', q.description,
-      'ht', b.ht,
-      'tva', b.tva,
-      'ttc', b.ttc,
-      'nid', b.docId,
-      'hub_id', _hub_id,
-      'filepath', filepath(b.docId),
-      'ctime', b.ctime,
-      'status', b.status,
-      'category', b.category
-    ) `bill`,
     JSON_OBJECT(
       'custId', w.custId,
       'countrycode', s.countrycode,
@@ -92,11 +79,13 @@ BEGIN
     LEFT JOIN quotation q ON w.custId=q.custId AND w.id=q.workId
     LEFT JOIN bill b ON w.custId=b.custId AND w.id=b.workId
     INNER JOIN `site` s ON s.custId=w.custId AND w.siteId=s.id
-    INNER JOIN `_filter` f ON f.val=w.status
     LEFT JOIN `workType` t ON t.id=w.category
     WHERE w.custId=_custId AND IFNULL(_siteId, w.siteId)=w.siteId
-    ORDER BY w.ctime DESC
     LIMIT _offset ,_range;
+  SET @stm = CONCAT("SELECT * FROM _view", " ", @stm);
+  PREPARE stmt FROM @stm;
+  EXECUTE stmt;
+  DEALLOCATE PREPARE stmt;
 END$
 
 DELIMITER ;
