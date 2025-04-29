@@ -6,6 +6,30 @@
         "src": "write"
       }
     },
+    "summary": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
+    },
+    "bills": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
+    },
+    "notes": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
+    },
+    "quotations": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
+    },
     "list": {
       "scope": "hub",
       "permission": {

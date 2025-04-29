@@ -110,7 +110,7 @@ class Bill extends DrumeeMfs {
     } else {
       node = await this.store(data)
     }
-    await this.db.await_proc('bill_update', { folderId: node.nid, id: bill.id});
+    await this.db.await_proc('bill_update', { docId: node.nid, id: bill.id});
     let work = await this.db.await_proc('work_details', bill.workId);
     this.output.data(work);
   }

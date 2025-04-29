@@ -9,14 +9,14 @@ BEGIN
   DECLARE _range bigint;
   DECLARE _offset bigint;
   DECLARE _page INTEGER DEFAULT 1;
-  DECLARE _custId INTEGER ;
+  DECLARE _workId INTEGER ;
   DECLARE _order VARCHAR(20) DEFAULT 'desc';
 
   SELECT IFNULL(JSON_VALUE(_args, "$.order"), 'desc') INTO _order;
   SELECT IFNULL(JSON_VALUE(_args, "$.page"), 1) INTO _page;
   SELECT IFNULL(JSON_VALUE(_args, "$.pagelength"), 45) INTO @rows_per_page;
 
-  SELECT JSON_VALUE(_args, "$.custId") INTO _custId;
+  SELECT JSON_VALUE(_args, "$.workId") INTO _workId;
   CALL yp.pageToLimits(_page, _offset, _range);
 
   SELECT
@@ -48,7 +48,7 @@ BEGIN
     LEFT JOIN `site` s ON s.id=n.siteId
     LEFT JOIN work w ON w.id=n.workId
     INNER JOIN `workType` t ON t.id=w.category
-    WHERE n.custId = _custId 
+    WHERE n.workId = _workId 
   ORDER BY 
     CASE WHEN LCASE(_order) = 'asc' THEN n.ctime END ASC,
     CASE WHEN LCASE(_order) = 'desc' THEN n.ctime END DESC
