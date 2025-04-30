@@ -34,7 +34,7 @@ BEGIN
 
   CALL seo_index(_description, 'quotation', JSON_OBJECT(
     'id', _id,
-    'table', 'note'
+    'table', 'quotation'
   ));
 
   CALL quote_get(_id);

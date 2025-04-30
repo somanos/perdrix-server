@@ -18,10 +18,13 @@ class Poc extends Entity {
    */
   async list() {
     const custId = this.input.get('custId');
+    const siteId = this.input.get('siteId');
     const page = this.input.get(Attr.page) || 1;
-    this.debug("AAA:23",  { custId, page })
-    let data = await this.db.await_proc('poc_list', { custId, page });
-    this.debug("AAA:23",  data)
+    let opt = { custId, page };
+    if (siteId) opt.siteId = siteId
+    this.debug("AAA:23", opt)
+    let data = await this.db.await_proc('poc_list', opt);
+    this.debug("AAA:23", data)
     this.output.list(data);
   }
 

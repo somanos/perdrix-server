@@ -38,5 +38,4 @@ BEGIN
   RETURN _chrono;
 END$
  
-
 DELIMITER ;

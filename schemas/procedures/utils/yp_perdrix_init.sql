@@ -16,7 +16,7 @@ BEGIN
 
   SELECT  CONCAT(_hostname, '.', main_domain()) INTO _vhost;
   REPLACE INTO sys_conf SELECT 'map-tiler-api-key', _api_key;
-  REPLACE INTO sys_conf SELECT 'address_api_endpoint', "api-adresse.data.gouv.fr/search/?q={0}&limit=10&autocomplete=1";
+  REPLACE INTO sys_conf SELECT 'address_api_endpoint', "https://api-adresse.data.gouv.fr/search/?q={0}&limit=10&autocomplete=1";
   REPLACE INTO sys_conf SELECT 'app_host', _vhost;
 
   SELECT db_name, e.id, e.home_id FROM vhost v INNER JOIN entity e USING(id) WHERE 

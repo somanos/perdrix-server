@@ -10,9 +10,11 @@ BEGIN
   DECLARE _offset bigint;
   DECLARE _page INTEGER DEFAULT 1;
   DECLARE _custId INTEGER ;
+  DECLARE _siteId INTEGER ;
 
   SELECT IFNULL(JSON_VALUE(_args, "$.page"), 1) INTO _page;
   SELECT JSON_VALUE(_args, "$.custId") INTO _custId;
+  SELECT JSON_VALUE(_args, "$.siteId") INTO _siteId;
   SELECT IFNULL(JSON_VALUE(_args, "$.pagelength"), 45) INTO @rows_per_page;  
   CALL yp.pageToLimits(_page, _offset, _range);
 
@@ -42,7 +44,7 @@ BEGIN
     LEFT JOIN `site` s ON s.custId=p.custId
     LEFT JOIN customer c ON c.id = p.custId
     INNER JOIN gender g ON p.gender = g.id
-    WHERE p.custId = _custId GROUP BY p.id
+    WHERE IF(_siteId IS NOT NULL, p.siteId = _siteId, p.custId = _custId) GROUP BY p.id
     LIMIT _offset ,_range;
 END$
 

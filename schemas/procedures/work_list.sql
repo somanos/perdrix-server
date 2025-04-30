@@ -36,9 +36,7 @@ BEGIN
   DROP TABLE IF EXISTS _view;
   CREATE TEMPORARY TABLE _view LIKE work;
   ALTER TABLE _view ADD column city VARCHAR(200);
-  ALTER TABLE _view ADD column quoteId INTEGER;
   ALTER TABLE _view ADD column `type` VARCHAR(100);
-  ALTER TABLE _view ADD column `workType` VARCHAR(100);
   ALTER TABLE _view ADD column `page` BIGINT;
   ALTER TABLE _view ADD column `site` JSON;
   SET @stm = "ORDER BY";
@@ -59,9 +57,7 @@ BEGIN
   INSERT INTO _view SELECT
     w.*,
     s.city,
-    q.id quoteId,
     t.tag `type`,
-    t.tag `workType`,
     _page `page`,
     JSON_OBJECT(
       'custId', w.custId,
@@ -76,13 +72,13 @@ BEGIN
       'id', s.id
     ) `site`
   FROM work w
-    LEFT JOIN quotation q ON w.custId=q.custId AND w.id=q.workId
-    LEFT JOIN bill b ON w.custId=b.custId AND w.id=b.workId
+    -- LEFT JOIN quotation q ON w.custId=q.custId AND w.id=q.workId
+    -- LEFT JOIN bill b ON w.custId=b.custId AND w.id=b.workId
     INNER JOIN `site` s ON s.custId=w.custId AND w.siteId=s.id
     LEFT JOIN `workType` t ON t.id=w.category
     WHERE w.custId=_custId AND IFNULL(_siteId, w.siteId)=w.siteId
     LIMIT _offset ,_range;
-  SET @stm = CONCAT("SELECT * FROM _view", " ", @stm);
+  SET @stm = CONCAT("SELECT *, type workType FROM _view", " ", @stm);
   PREPARE stmt FROM @stm;
   EXECUTE stmt;
   DEALLOCATE PREPARE stmt;

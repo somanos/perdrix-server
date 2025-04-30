@@ -88,7 +88,7 @@ class Bill extends DrumeeMfs {
   /**
    * 
    */
-  async create() {
+  async __create() {
     let args = this.input.get('args');
     for (let name of ['ht', 'ttc', 'tva', 'discount']) {
       args[name] = args[name] || 0;
@@ -96,12 +96,12 @@ class Bill extends DrumeeMfs {
 
     let bill = await this.db.await_proc('bill_create', args);
     if (!bill || !bill.workId || !bill.chrono) {
-      this.exception.server("QUOTE_FAILED");
+      this.exception.server("BILL_FAILED");
       return
     }
     let data = await this.writeTemplate(bill);
     if (!data || !data.incoming_file) {
-      this.exception.server("QUOTE_TEMPLATE_FAILED");
+      this.exception.server("BILL_TEMPLATE_FAILED");
       return;
     }
     let node;
@@ -110,15 +110,44 @@ class Bill extends DrumeeMfs {
     } else {
       node = await this.store(data)
     }
-    await this.db.await_proc('bill_update', { docId: node.nid, id: bill.id});
+    await this.db.await_proc('bill_update', { docId: node.nid, id: bill.id });
     let work = await this.db.await_proc('work_details', bill.workId);
     this.output.data(work);
   }
 
- 
-   /**
+  /**
   * 
   */
+  async create() {
+    let args = this.input.get('args');
+    for (let name of ['ht', 'ttc', 'tva']) {
+      args[name] = args[name] || 0;
+    }
+
+    let bill = await this.db.await_proc('bill_create', args);
+    if (!bill || !bill.workId || !bill.chrono) {
+      this.exception.server("BILL_FAILED");
+      return
+    }
+    let data = await this.writeTemplate(bill, { tpl_file: "bill", dest_dir: "/Factures", prefix: "fac" });
+    if (!data || !data.incoming_file) {
+      this.exception.server("BILL_TEMPLATE_FAILED");
+      return;
+    }
+    let node;
+    if (data.replace) {
+      node = await this.replace(data);
+    } else {
+      node = await this.store(data)
+    }
+    await this.db.await_proc('bill_update', { docId: node.nid, id: bill.id });
+    let work = await this.db.await_proc('work_details', bill.workId);
+    this.output.data(work);
+  }
+
+  /**
+   * 
+   */
   async list() {
     const custId = this.input.get('custId');
     const status = this.input.get(Attr.status);

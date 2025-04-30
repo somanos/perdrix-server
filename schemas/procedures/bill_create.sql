@@ -48,7 +48,6 @@ BEGIN
 
   INSERT INTO bill 
     SELECT NULL,
-    NULL,
     _custId,
     _siteId,
     _workId,
@@ -67,7 +66,6 @@ BEGIN
     DELETE FROM `bill` WHERE id=_id;
     INSERT INTO bill 
       SELECT _id+1,
-      NULL,
       _custId,
       _siteId,
       _workId,

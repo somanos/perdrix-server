@@ -29,6 +29,9 @@ BEGIN
     b.*,
     m.id nid,
     m.file_path filepath,
+    IF(m.extension ='' OR m.extension IS NULL, 
+      m.user_filename, CONCAT(m.user_filename, '.', m.extension)
+    ) `filename`,
     _hub_id hub_id
   FROM bill b
     LEFT JOIN media m ON b.docId = m.id
