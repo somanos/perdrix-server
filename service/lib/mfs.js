@@ -24,8 +24,6 @@ const {
   Attr, Events, Script, toArray, nullValue,
   RedisStore, Cache, sleep, Constants, sysEnv, getFileinfo
 } = require("@drumee/server-essentials");
-const Mustache = require("mustache")
-const { createHash } = require("crypto");
 
 const { DENIED } = Events;
 const {
@@ -40,7 +38,7 @@ const {
   Document,
   FileIo,
   Mfs,
-  MfsTools,
+  MfsTools
 } = require("@drumee/server-core");
 const { mv } = MfsTools;
 
@@ -437,7 +435,6 @@ class DrumeeMfs extends Mfs {
     data.filesize = filesize || 0;
 
     if (filetype) data.category = filetype;
-    this.debug("AAA:471", opt, c, data)
     return data;
   }
 
@@ -529,7 +526,6 @@ class DrumeeMfs extends Mfs {
     }
 
     let parent_of = await this.db.await_func("is_parent_of", parent.nid, pid);
-    this.debug("AAA:527", parent_of, parent, parent.nid, pid)
     if (!parent_of && parent.nid != pid) {
       error = `WRONG_FILEPATH`;
       this.exception.server(error);
@@ -565,7 +561,6 @@ class DrumeeMfs extends Mfs {
     }
     metadata.md5Hash = md5Hash;
     let node = await this.ensureCreateNode(args, metadata);
-    this.debug("AAA:536", args, node)
 
     if (!node || !node.id) {
       this.exception.server(`Failed to save file ${filename}`);
@@ -1078,73 +1073,6 @@ class DrumeeMfs extends Mfs {
     this.output.data({ ...node, ...attr, replace: 1 });
   }
 
-  /**
-   * 
-   */
-  async writeTemplate(view, args) {
-    let { tpl_file, dest_dir, prefix } = args;
-    //const tpl_file = 'quotation.xml';
-    const Shelljs = require("shelljs");
-    const TPL_BASE = "../../templates";
-    this.debug("AAAA:1084", view, args)
-    if (!/\.xml$/.test(tpl_file)) {
-      tpl_file = `${tpl_file}.xml`
-    }
-    const tpl = resolve(__dirname, TPL_BASE, tpl_file);
-    if (!existsSync(tpl)) {
-      this.warn("Could not find template file", tpl)
-      return null;
-    }
-    let year = new Date().getFullYear();
-    let opt = {
-      hub_id: this.hub.get(Attr.id),
-      pid: this.home_id,
-      ownpath: join(dest_dir, year.toString(), 'Odt')
-    }
-    let dir = await this.make_dir(opt);
-    if (isEmpty(dir) || !dir.nid) {
-      return;
-    }
-
-    let tpl_str = readFileSync(tpl);
-    tpl_str = String(tpl_str).trim().toString();
-    let content = Mustache.render(tpl_str, view);
-    let base = year + "-" + this.randomString();
-    const xml_output = resolve(tmp_dir, `${base}.xml`);
-
-    writeFileSync(xml_output, content, { encoding: "utf-8" });
-    Shelljs.env["HOME"] = tmp_dir;
-    let ext = "odt";
-    const cmd = `/usr/bin/libreoffice --headless --convert-to ${ext} --outdir ${tmp_dir} ${xml_output}`;
-    if (Shelljs.exec(cmd)) {
-      let file = resolve(tmp_dir, `${base}.${ext}`);
-      if (!existsSync(file)) {
-        this.warn("Could not find generated file", file)
-        return null;
-      }
-      opt.incoming_file = file;
-      const { size } = statSync(file, { throwIfNoEntry: false });
-      opt.filesize = size;
-      let content = readFileSync(file);
-      let hash = createHash("md5");
-      let chunk = Buffer.from(content, "utf8");
-      hash.update(chunk);
-      opt.md5Hash = hash.digest("hex");
-      opt.parent = dir;
-      opt.filename = `${prefix}${view.chrono}.${ext}`;
-      opt.filetype = Attr.document
-      opt.ownpath = resolve(opt.ownpath, opt.filename);
-      opt.pid = dir.nid;
-      this.debug("AAA:1136", opt)
-      let data = await this.db.await_proc("mfs_get_by_path", opt.ownpath);
-      if (data && data.nid) {
-        opt.replace = 1;
-        opt.nid = data.nid;
-      }
-      return opt;
-    }
-    return null;
-  }
 
 }
 module.exports = { DrumeeMfs };

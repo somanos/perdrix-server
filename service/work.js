@@ -93,7 +93,7 @@ class Work extends Entity {
   async bills() {
     const workId = this.input.get('workId');
     const page = this.input.get(Attr.page) || 1;
-    let data = await this.db.await_proc('work_bills', { workId, page });
+    let data = await this.db.await_proc('work_bills', { workId, page, uid: this.uid });
     this.output.list(data);
   }
 
@@ -103,7 +103,7 @@ class Work extends Entity {
   async notes() {
     const workId = this.input.get('workId');
     const page = this.input.get(Attr.page) || 1;
-    let data = await this.db.await_proc('work_notes', { workId, page });
+    let data = await this.db.await_proc('work_notes', { workId, page, uid: this.uid });
     this.output.list(data);
   }
 
@@ -113,7 +113,7 @@ class Work extends Entity {
   async quotations() {
     const workId = this.input.get('workId');
     const page = this.input.get(Attr.page) || 1;
-    let data = await this.db.await_proc('work_quotations', { workId, page });
+    let data = await this.db.await_proc('work_quotations', { workId, page, uid: this.uid });
     this.output.list(data);
   }
 

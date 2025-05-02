@@ -1,33 +1,29 @@
-const { DrumeeMfs } = require('./lib/mfs');
-const {
-  Attr, sysEnv,
-} = require('@drumee/server-essentials');
-const { resolve } = require("path");
-const { readFileSync, writeFileSync, statSync, existsSync } = require("fs");
-const Mustache = require("mustache")
-const TPL_BASE = "../templates";
-const { createHash } = require("crypto");
-const { isEmpty } = require("lodash");
-const { tmp_dir } = sysEnv();
+const { Sales } = require('./lib/sales');
 
-class Quote extends DrumeeMfs {
-
+class Quote extends Sales {
 
   /**
    * 
    */
   async create() {
     let args = this.input.get('args');
+    let dest_dir = "/Devis";
     for (let name of ['ht', 'ttc', 'tva', 'discount']) {
       args[name] = args[name] || 0;
     }
 
     let quote = await this.db.await_proc('quote_create', args);
-    if (!quote || !quote.workId || !quote.chrono) {
+    if (!quote || !quote.custId || !quote.chrono) {
       this.exception.server("QUOTE_FAILED");
       return
     }
-    let data = await this.writeTemplate(quote, { tpl_file: "quotation", dest_dir: "/Devis", prefix: "dev" });
+    let customer = await this.db.await_proc('customer_get', quote.custId);
+    quote = { ...customer, ...quote };
+    let data = await this.writeTemplate(quote, {
+      template: "quote.fodt",
+      dest_dir,
+      prefix: "dev"
+    });
     if (!data || !data.incoming_file) {
       this.exception.server("QUOTE_TEMPLATE_FAILED");
       return;
@@ -42,7 +38,6 @@ class Quote extends DrumeeMfs {
     let work = await this.db.await_proc('work_details', quote.workId);
     this.output.data(work);
   }
-
 
 }
 

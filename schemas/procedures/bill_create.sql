@@ -38,7 +38,7 @@ BEGIN
   SELECT id FROM billType WHERE tag=_category INTO _ccode;
 
   IF _ccode IS NULL THEN 
-    INSERT INTO billType SELECT NULL, _category;
+    INSERT INTO billType SELECT NULL, _category, substring(_category, 1, 3);
     SELECT id FROM billType WHERE tag=_category INTO _ccode;
   END IF;
 
