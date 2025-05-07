@@ -44,15 +44,13 @@ class Customer extends Entity {
    * 
    */
   async search() {
-    const sort_by = this.input.get(Attr.sort_by) || 'nom';
+    const sort_by = this.input.get(Attr.sort_by) || 'name';
     const order = this.input.get(Attr.order) || 'asc';
     const page = this.input.get(Attr.page);
     const type = this.input.get(Attr.type);
     let words = this.input.get('words') || '^.*$';
     words = `^${words}`;
     let data = await this.db.await_proc('customer_list', { words, sort_by, order, page, type });
-    this.debug("AAAA:65", { words, sort_by, order, page })
-    console.log("AAA:8888", getUiInfo(), getPluginsInfo())
     this.output.list(data);
   }
 

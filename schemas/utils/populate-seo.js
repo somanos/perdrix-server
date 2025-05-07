@@ -26,7 +26,7 @@ async function populate_customer() {
     let custName = row.lastname || row.company;
     let { id } = row;
     let reference = {
-      id, table: 'customer', db: 'perdrix'
+      id, table: 'customer',
     }
     if (row.firstname) custName = `${custName} ${row.firstname}`;
     if (custName) {
@@ -53,7 +53,7 @@ async function populate_site() {
   for (let row of rows) {
     let { id } = row;
     let reference = {
-      id, table: 'site', db: 'perdrix'
+      id, table: 'site',
     }
     if (row.location) {
       let streetName = row.location[2];
@@ -76,7 +76,7 @@ async function populate_poc() {
   for (let row of rows) {
     let { id } = row;
     let reference = {
-      id, table: 'poc', db: 'perdrix'
+      id, table: 'poc',
     }
     let pocName = row.lastname;
     if (row.firstname) pocName = `${pocName} ${row.firstname}`;
@@ -90,6 +90,7 @@ async function populate_poc() {
         await Perdrix.await_proc(`seo_index`, p, 'phone', reference);
       }
     }
+    /** Index customer as well */
   }
 }
 /**
@@ -101,7 +102,7 @@ async function populate_work() {
   for (let row of rows) {
     let { id } = row;
     let reference = {
-      id, table: 'work', db: 'perdrix'
+      id, table: 'work',
     }
     let words = row.description.split(/[ \.,;\/\:]+/);
     let line = '';
@@ -125,9 +126,9 @@ async function populate_work() {
  */
 async function populate() {
 
-  // await populate_customer();
-  // await populate_site();
-  // await populate_poc();
+  await populate_customer();
+  await populate_site();
+  await populate_poc();
   await populate_work();
 
 }

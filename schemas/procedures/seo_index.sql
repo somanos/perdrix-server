@@ -17,7 +17,6 @@ BEGIN
   SELECT unix_timestamp() INTO _id;
   SELECT JSON_VALUE(_reference, "$.id") INTO _id;
   SELECT JSON_VALUE(_reference, "$.table") INTO _table;
-  SELECT JSON_SET(_reference, "$.db", database()) INTO _reference;
   SELECT MD5(REGEXP_REPLACE(CONCAT(_type, _word), ' +', '')) INTO _ref_id;
   SELECT count(1) FROM seo_object WHERE ref_id=_ref_id INTO _count;
   SELECT unix_timestamp() INTO _ts;

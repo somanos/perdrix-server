@@ -1,8 +1,8 @@
 
 DELIMITER $
 
-DROP PROCEDURE IF EXISTS `poc_list`$
-CREATE PROCEDURE `poc_list`(
+DROP PROCEDURE IF EXISTS `site_list_poc`$
+CREATE PROCEDURE `site_list_poc`(
   IN _args JSON
 )
 BEGIN
@@ -19,7 +19,7 @@ BEGIN
   CALL yp.pageToLimits(_page, _offset, _range);
 
   SELECT
-    p.id pocId,
+    sp.pocId,
     c.id custId,
     s.id siteId,
     p.role,
@@ -39,12 +39,24 @@ BEGIN
       'city', s.city,
       'geometry', s.geometry,
       'ctime', s.ctime
-    )`site`
-  FROM poc p
-    LEFT JOIN `site` s ON s.custId=p.custId
-    LEFT JOIN customer c ON c.id = p.custId
+    )`site`,
+    JSON_OBJECT(
+      'countrycode', c.countrycode,
+      'location', c.location,
+      'postcode', c.postcode,
+      'citycode', c.citycode,
+      'city', c.city,
+      'geometry', c.geometry,
+      'ctime', c.ctime,
+      'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), '')))
+    )`customer`
+  FROM site_poc sp
+    INNER JOIN `site` s ON s.id=sp.siteId
+    INNER JOIN customer c ON c.id = sp.custId
+    INNER JOIN poc p ON p.id=sp.pocId
     INNER JOIN gender g ON p.gender = g.id
-    WHERE IF(_siteId IS NOT NULL, p.siteId = _siteId, p.custId = _custId) GROUP BY p.id
+    WHERE sp.siteId = _siteId GROUP BY p.id
+    ORDER BY sp.ctime DESC
     LIMIT _offset ,_range;
 END$
 

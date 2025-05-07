@@ -11,6 +11,18 @@
       "permission": {
         "src": "read"
       }
+    },
+    "add_poc": {
+      "scope": "hub",
+      "permission": {
+        "src": "write"
+      }
+    },
+    "list_poc": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
     }
  },
   "modules": {

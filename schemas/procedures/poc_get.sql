@@ -8,9 +8,9 @@ CREATE PROCEDURE `poc_get`(
 BEGIN  
 
   SELECT 
-    p.id,
+    p.id pocId,
     s.custId, 
-    COALESCE(s.id, c.id) siteId, 
+    s.id siteId, 
     CONCAT(p.lastname, IF(p.firstname != '', CONCAT(' ', p.firstname), '')) pocName,
     p.role,
     g.shortTag gender,

@@ -26,6 +26,37 @@ class Site extends Entity {
   }
 
   /**
+ * 
+ */
+  async list_poc() {
+    const siteId = this.input.get('siteId');
+    const page = this.input.get(Attr.page) || 1;
+    let opt = { siteId, page };
+    let data = await this.db.await_proc('site_list_poc', opt);
+    this.output.list(data);
+  }
+
+  /**
+   * 
+   */
+  async add_poc() {
+    let args = this.input.get('args');
+    let data;
+    if (args.pocId && args.custId && args.siteId) {
+      if(args.lastname){
+        data = await this.db.await_proc('poc_update', args);
+      }
+      data = await this.db.await_proc('site_add_poc', args);
+    } else {
+      let { pocId, custId, siteId } = await this.db.await_proc('poc_create', args);
+      if (pocId) {
+        data = await this.db.await_proc('site_add_poc', { pocId, custId, siteId });
+      }
+    }
+    this.output.data(data);
+  }
+
+  /**
    * 
    */
   async list() {

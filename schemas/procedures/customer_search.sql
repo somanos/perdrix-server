@@ -19,7 +19,7 @@ BEGIN
   CALL yp.pageToLimits(_page, _offset, _range);  
 
   SELECT 
-    c.id clientId, 
+    c.id custId, 
     IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))) custName,
     c.ctime,
     c.category,
