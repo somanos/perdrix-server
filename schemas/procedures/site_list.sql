@@ -13,16 +13,13 @@ BEGIN
   DECLARE _filter JSON ;
   DECLARE _i TINYINT(6) unsigned DEFAULT 0;
 
-  SELECT IFNULL(JSON_VALUE(_args, "$.page"), 1) INTO _page;
+  SELECT IFNULL(JSON_VALUE(_args, "$.page"), 1) INTO @_page;
   SELECT IFNULL(JSON_VALUE(_args, "$.pagelength"), 45) INTO @rows_per_page;  
-  CALL yp.pageToLimits(_page, _offset, _range);
+  CALL yp.pageToLimits(@_page, _offset, _range);
 
   SELECT JSON_VALUE(_args, "$.custId") INTO _custId;
   SELECT JSON_EXTRACT(_args, "$.filter") INTO _filter;
 
-  DROP TABLE IF EXISTS _view;
-  CREATE TEMPORARY TABLE _view LIKE `site`;
-  ALTER TABLE _view ADD column `page` BIGINT;
   SET @stm = "ORDER BY";
   IF JSON_TYPE(_filter) = 'ARRAY' AND JSON_LENGTH(_filter)>0 THEN 
     WHILE _i < JSON_LENGTH(_filter) DO 
@@ -39,16 +36,9 @@ BEGIN
     SELECT CONCAT(@stm, " ", "ctime desc") INTO @stm;
   END IF;
 
-  INSERT INTO _view SELECT
-    *,
-    _page `page`
-  FROM `site`
-    WHERE custId=_custId
-    LIMIT _offset ,_range;
-
-  SET @stm = CONCAT("SELECT * FROM _view", " ", @stm);
+  SET @stm = CONCAT("SELECT *, @_page page FROM site WHERE custId=?", " ", @stm, " ", "LIMIT ?, ?");
   PREPARE stmt FROM @stm;
-  EXECUTE stmt;
+  EXECUTE stmt USING _custId, _offset, _range;
   DEALLOCATE PREPARE stmt;
 
 END$
