@@ -10,6 +10,7 @@ BEGIN
   DECLARE _offset bigint;
   DECLARE _page INTEGER DEFAULT 1;
   DECLARE _filter JSON ;
+  DECLARE _i TINYINT(6) unsigned DEFAULT 0;
 
   SELECT IFNULL(JSON_VALUE(_args, "$.page"), 1) INTO @_page;
   SELECT IFNULL(JSON_VALUE(_args, "$.pagelength"), 45) INTO @rows_per_page;  
