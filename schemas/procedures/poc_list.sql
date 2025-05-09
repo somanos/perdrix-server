@@ -14,7 +14,6 @@ BEGIN
   SELECT IFNULL(JSON_VALUE(_args, "$.pagelength"), 45) INTO @rows_per_page;  
   CALL yp.pageToLimits(_page, _offset, _range);
 
-  SELECT JSON_VALUE(_args, "$.custId") INTO _custId;
   SELECT JSON_EXTRACT(_args, "$.filter") INTO _filter;
 
   SET @stm = "ORDER BY";
