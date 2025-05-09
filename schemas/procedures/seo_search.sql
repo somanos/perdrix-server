@@ -61,10 +61,11 @@ BEGIN
       'site',
       JSON_OBJECT(
         'custId', c.id,
+        'siteId', s.id,
         'gender', g.shortTag,
         'companyclass', cc.tag,
         'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
-        'location', c.location,
+        'location', s.location,
         'site', s.location,
         'geometry', s.geometry,
         'city', s.city,

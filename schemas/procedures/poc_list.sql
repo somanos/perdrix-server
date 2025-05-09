@@ -31,12 +31,14 @@ BEGIN
       SELECT _i + 1 INTO _i;
     END WHILE;
   ELSE
-    SELECT CONCAT(@stm, " ", "ctime desc") INTO @stm;
+    SELECT CONCAT(@stm, " ", "lastname asc") INTO @stm;
   END IF;
 
-  SET @stm = CONCAT(
-    "SELECT p.*, p.id pocId, g.shortTag gender, @_page page FROM poc p ", 
-    "INNER JOIN gender g ON p.gender = g.id ", @stm, " ", "LIMIT ?, ?"
+  SET @stm = CONCAT("SELECT ",
+    "p.id, lastname, firstname, email, phones, p.id pocId, ",
+    "g.shortTag gender, @_page page ",
+    "FROM poc p INNER JOIN gender g ON p.gender = g.id ", 
+    @stm, " ", "LIMIT ?, ?"
   );
 
   PREPARE stmt FROM @stm;

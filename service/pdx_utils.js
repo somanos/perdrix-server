@@ -82,7 +82,6 @@ class PerdrixUtils extends Entity {
     if (!page) page = 1;
     let data;
     if (/^[0-9]+$/.test(words)) {
-      this.debug("AAA:101 waiting for", { words })
       data = await this.db.await_proc('search_by_id', { words, page }, tables);
       this.output.list(data);
       this.debug("AAA:105 Got", { words })
@@ -95,6 +94,7 @@ class PerdrixUtils extends Entity {
     } else {
       if (!/^.+\*$/.test(words)) words = words + "*";
     }
+    this.debug("AAA:101 seo_search", JSON.stringify({ words, page }),  JSON.stringify(tables))
     data = await this.db.await_proc('seo_search', { words, page }, tables);
     this.output.list(data);
   }
