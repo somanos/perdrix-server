@@ -6,32 +6,6 @@ const {
 
 class Work extends Entity {
 
-  /**
-   * 
-   * @returns 
-   */
-  // async createWork() {
-  //   let args = this.input.get('args');
-  //   let { description, category, custId} = args;
-  //   if (!args.siteId) {/** User customer location as site */
-  //     args = await this.db.await_proc('customer_get', custId);
-  //     this.debug("AAA:18", args)
-  //     if(!args || !args.custId){
-  //       return this.exception.user("INVALID_CUSTID")
-  //     }
-  //     let exists = await this.db.await_func('site_exists', args);
-  //     if (!exists) {
-  //       let { id } = await this.db.await_proc('site_create', args);
-  //       args.siteId = id;
-  //     } else {
-  //       args.siteId = exists;
-  //     }
-  //   }
-  //   args.description = description;
-  //   args.category = category;
-  //   let data = await this.db.await_proc('work_create', args);
-  //   return data
-  // }
 
   /**
    * 
@@ -41,7 +15,6 @@ class Work extends Entity {
     let { description, category, custId } = args;
     if (!args.siteId) {/** User customer location as site */
       args = await this.db.await_proc('customer_get', custId);
-      this.debug("AAA:18", args)
       if (!args || !args.custId) {
         return this.exception.user("INVALID_CUSTID")
       }
@@ -74,6 +47,7 @@ class Work extends Entity {
     if (!nullValue(siteId)) {
       opt.siteId = siteId;
     }
+    this.debug("AAA:101", JSON.stringify(opt))
     let data = await this.db.await_proc('work_list', opt);
     this.output.list(data);
   }
@@ -85,6 +59,23 @@ class Work extends Entity {
     const workId = this.input.get('workId');
     let data = await this.db.await_proc('work_get', workId);
     this.output.data(data);
+  }
+
+  /**
+   * 
+   */
+  async search() {
+    const sort_by = this.input.get(Attr.sort_by) || 'name';
+    const order = this.input.get(Attr.order) || 'asc';
+    const page = this.input.get(Attr.page);
+    const custId = this.input.get('custId');
+    let words = this.input.get('words') || '^.*$';
+    if (words !== '^.*$') {
+      words = `(?i)${words}`
+    }
+    let data = await this.db.await_proc('work_search',
+      { words, sort_by, order, page, custId });
+    this.output.list(data);
   }
 
   /**

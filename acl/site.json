@@ -12,6 +12,12 @@
         "src": "read"
       }
     },
+    "search": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
+    },
     "add_poc": {
       "scope": "hub",
       "permission": {

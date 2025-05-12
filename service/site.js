@@ -43,7 +43,7 @@ class Site extends Entity {
     let args = this.input.get('args');
     let data;
     if (args.pocId && args.custId && args.siteId) {
-      if(args.lastname){
+      if (args.lastname) {
         data = await this.db.await_proc('poc_update', args);
       }
       data = await this.db.await_proc('site_add_poc', args);
@@ -66,8 +66,26 @@ class Site extends Entity {
     const filter = this.input.get('filter');
     let opt = { custId, page, siteId };
     if (filter) opt.filter = filter;
-    this.debug("AAA:42", JSON.stringify(opt))
     let data = await this.db.await_proc('site_list', opt);
+    this.output.list(data);
+  }
+
+  /**
+   * 
+   */
+  async search() {
+    const sort_by = this.input.get(Attr.sort_by) || 'name';
+    const order = this.input.get(Attr.order) || 'asc';
+    const page = this.input.get(Attr.page);
+    const custId = this.input.get('custId');
+    let words = this.input.get('words') || '^.*$';
+    if (words !== '^.*$') {
+      words = `(?i)${words}`
+    }
+    this.debug("AAA:18", { words, sort_by, order, page, custId })
+
+    let data = await this.db.await_proc('site_search',
+      { words, sort_by, order, page, custId });
     this.output.list(data);
   }
 

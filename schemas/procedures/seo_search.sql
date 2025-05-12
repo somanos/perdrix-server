@@ -42,10 +42,11 @@ BEGIN
     itemId INTEGER UNSIGNED,
     word TEXT,
     relevance DOUBLE DEFAULT 0,
-    ctype VARCHAR(16),
+    `type` VARCHAR(16),
     content JSON,
+    reference JSON,
     ctime INT(11) UNSIGNED,
-    PRIMARY KEY (itemId, ctype)
+    PRIMARY KEY (itemId, `type`)
   );
 
   DROP TABLE IF EXISTS _types;
@@ -55,23 +56,28 @@ BEGIN
 
   IF _tables IS NULL OR json_array_contains(_tables, "site") THEN
     REPLACE INTO _view SELECT 
-      c.id, 
+      s.id, 
       r.word,
       r.relevance,
       'site',
       JSON_OBJECT(
-        'custId', c.id,
         'siteId', s.id,
-        'gender', g.shortTag,
-        'companyclass', cc.tag,
-        'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
         'location', s.location,
-        'site', s.location,
         'geometry', s.geometry,
         'city', s.city,
         'postcode', s.postcode
-      ) content,
-      c.ctime
+      ),
+      JSON_OBJECT(
+        'custId', c.id,
+        'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
+        'companyclass', cc.tag,
+        'gender', g.shortTag,
+        'location', c.location,
+        'city', c.city,
+        'geometry', c.geometry,
+        'postcode', c.postcode
+      ),
+      s.ctime
       FROM `site` s 
         INNER JOIN seo_object o USING(id) 
         INNER JOIN customer c ON c.id=s.custId AND s.id=o.id
@@ -96,7 +102,8 @@ BEGIN
         'city', c.city,
         'geometry', c.geometry,
         'postcode', c.postcode
-      ) content,
+      ),
+      JSON_OBJECT(),
       c.ctime
       FROM customer c 
         INNER JOIN seo_object o USING(id) 
@@ -108,33 +115,25 @@ BEGIN
 
   IF _tables IS NULL OR json_array_contains(_tables, "poc") THEN
     REPLACE INTO _view SELECT 
-      c.id, 
+      p.id, 
       r.word,
       r.relevance,
       'poc',
       JSON_OBJECT(
-        'custId', c.id,
-        'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
-        'companyclass', cc.tag,
-        'city', c.city,
-        'location', c.location,
-        'geometry', c.geometry,
-        'category', c.category,
-        'pocGender', g.shortTag,
-        'gender', gg.shortTag,
-        'siteId', p.siteId,
+        'pocId', p.id,
+        'gender', g.shortTag,
+        'lastname', p.lastname,
+        'firstname', p.firstname,
         'pocName', CONCAT(p.lastname, IF(p.firstname != '', CONCAT(' ', p.firstname), '')),
         'email', p.email,
         'phones', p.phones
-      ) content,
-      c.ctime
+      ) poc,
+      JSON_OBJECT(),
+      p.ctime
       FROM poc p
         INNER JOIN seo_object o USING(id) 
-        INNER JOIN customer c ON c.id=p.custId AND p.id=o.id
         INNER JOIN _results r USING(ref_id)
         LEFT JOIN gender g ON g.id=p.gender
-        LEFT JOIN gender gg ON g.id=c.gender
-        LEFT JOIN companyClass cc ON c.type = cc.id
         WHERE o.table = 'poc';
   END IF;
 
@@ -145,39 +144,37 @@ BEGIN
       r.relevance,
       'work',
       JSON_OBJECT(
-        'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
         'type',  wt.tag,
+        'siteId', s.id,
+        'workId', w.id,
+        'location', s.location,
+        'description', w.description,
+        'city', s.city,
+        'postcode', s.postcode
+      ),
+      JSON_OBJECT(
+        'custId', c.id,
+        'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
         'companyclass', cc.tag,
         'gender', g.shortTag,
-        'custId', c.id,
-        'quoteId', q.id,
-        'workId', w.id,
-        'chrono', q.chrono,
         'location', c.location,
         'city', c.city,
-        'description', w.description,
-        'ht', q.ht,
-        'taux_tva', q.tva,
-        'val_tva', q.ttc-q.ht,
-        'ttc', q.ttc,
-        'discount', q.discount,
-        'docId', q.docId,
-        'ctime', q.ctime,
-        'statut', q.status
-      ) content,
-      q.ctime
+        'geometry', c.geometry,
+        'postcode', c.postcode
+      ),
+      w.ctime
       FROM work w
         INNER JOIN seo_object o USING(id) 
         INNER JOIN _results r USING(ref_id)
-        INNER JOIN quotation q ON w.id=q.workId AND w.custId=q.custId
+        INNER JOIN `site` s ON w.siteId=s.id AND w.custId=s.custId
         INNER JOIN workType wt ON w.category=wt.id
-        INNER JOIN customer c ON c.id=w.custId AND w.custId=q.custId
+        INNER JOIN customer c ON c.id=w.custId
         LEFT JOIN gender g ON g.id=c.gender
         LEFT JOIN companyClass cc ON c.type = cc.id
         WHERE o.table = 'work';
   END IF;
 
-  SELECT *, ctype `type` FROM _view ORDER BY relevance LIMIT _offset ,_range;
+  SELECT * FROM _view ORDER BY relevance LIMIT _offset ,_range;
 END$
 
 DELIMITER ;

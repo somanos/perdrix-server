@@ -32,7 +32,9 @@ BEGIN
   FROM customer c
     LEFT JOIN companyClass cc ON c.type = cc.id
     LEFT JOIN gender g ON c.gender = g.id
-    WHERE IF(_type='company', c.company REGEXP _words, CONCAT(c.lastname, ' ', c.firstname)  REGEXP _words)
+    WHERE IF(_type='company', 
+      c.company REGEXP _words, 
+      CONCAT(c.lastname, ' ', c.firstname) REGEXP _words)
   LIMIT _offset ,_range;
 END$
 

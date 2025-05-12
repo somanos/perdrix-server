@@ -72,15 +72,12 @@ BEGIN
       'id', s.id
     ) `site`
   FROM work w
-    -- LEFT JOIN quotation q ON w.custId=q.custId AND w.id=q.workId
-    -- LEFT JOIN bill b ON w.custId=b.custId AND w.id=b.workId
     INNER JOIN `site` s ON s.custId=w.custId AND w.siteId=s.id
     LEFT JOIN `workType` t ON t.id=w.category
-    WHERE w.custId=_custId AND IFNULL(_siteId, w.siteId)=w.siteId
-    LIMIT _offset ,_range;
-  SET @stm = CONCAT("SELECT *, type workType FROM _view", " ", @stm);
+    WHERE w.custId=_custId AND IFNULL(_siteId, w.siteId)=w.siteId;
+  SET @stm = CONCAT("SELECT *, type workType FROM _view", " ", @stm, " ", "LIMIT ?, ?");
   PREPARE stmt FROM @stm;
-  EXECUTE stmt;
+  EXECUTE stmt USING _offset, _range;
   DEALLOCATE PREPARE stmt;
 END$
 

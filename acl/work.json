@@ -30,6 +30,12 @@
         "src": "read"
       }
     },
+    "search": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
+    },
     "list": {
       "scope": "hub",
       "permission": {

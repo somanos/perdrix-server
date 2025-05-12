@@ -33,10 +33,30 @@ BEGIN
       SELECT _i + 1 INTO _i;
     END WHILE;
   ELSE
-    SELECT CONCAT(@stm, " ", "ctime desc") INTO @stm;
+    SELECT CONCAT(@stm, " ", "city asc, street asc, housenumber desc") INTO @stm;
   END IF;
+  DROP TABLE IF EXISTS `_site`;
+  CREATE TEMPORARY TABLE `_site` (
+    `id` int(10) unsigned,
+    `location` JSON,
+    `page` int(11) unsigned DEFAULT 1,
+    `street` varchar(200) DEFAULT "",
+    `housenumber` INTEGER DEFAULT NULL,
+    PRIMARY KEY (`id`)
+  );
 
-  SET @stm = CONCAT("SELECT *, @_page page FROM site WHERE custId=?", " ", @stm, " ", "LIMIT ?, ?");
+  INSERT INTO _site SELECT 
+    `id`,
+    `location`,
+     @_page,
+    REGEXP_REPLACE(JSON_VALUE(location, "$[2]"), "^(de +la +|des +|de +l\'|du +|la +|le +|de +)", ""),
+    CAST(REGEXP_REPLACE(IF(JSON_VALUE(location, "$[0]")="", 0, JSON_VALUE(location, "$[0]")), " *([0-9]+).*$", "\\1")  AS INTEGER)
+  FROM `site` WHERE custId=_custId;
+
+  SET @stm = CONCAT(
+    'SELECT s.*, page FROM site s INNER JOIN _site USING(id) WHERE custId=? ',
+    @stm, " ", "LIMIT ?, ?"
+  );
   PREPARE stmt FROM @stm;
   EXECUTE stmt USING _custId, _offset, _range;
   DEALLOCATE PREPARE stmt;
