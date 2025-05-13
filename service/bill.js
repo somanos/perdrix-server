@@ -48,11 +48,35 @@ class Bill extends Sales {
    */
   async list() {
     const custId = this.input.get('custId');
-    const status = this.input.get(Attr.status);
+    const fiscalYear = this.input.get('fiscalYear');
     const page = this.input.get(Attr.page);
-    this.debug("AAA:126", JSON.stringify({ custId, page, status }))
-    let data = await this.db.await_proc('bill_list', { custId, page, status });
+    this.debug("AAA:126", JSON.stringify({ custId, page, fiscalYear }))
+    let opt = { page };
+    if (/[0-9]{4,4}/.test(fiscalYear)) {
+      opt.fiscalYear = fiscalYear;
+    }
+    if (custId) {
+      opt.custId = custId;
+    }
+    let data = await this.db.await_proc('bill_list', opt);
     this.output.list(data);
+  }
+
+  /**
+   * 
+   */
+  async balance() {
+    const custId = this.input.get('custId') || 0;
+    const fiscalYear = this.input.get('fiscalYear');
+    let opt = {}
+    if (/[0-9]{4,4}/.test(fiscalYear)) {
+      opt.fiscalYear = fiscalYear;
+    }
+    if (custId) {
+      opt.custId = custId;
+    }
+    let data = await this.db.await_proc('bill_balance', opt);
+    this.output.data(data);
   }
 
 }

@@ -1,0 +1,31 @@
+
+DELIMITER $
+
+DROP FUNCTION IF EXISTS `fiscal_year`$
+CREATE FUNCTION `fiscal_year`(
+  _time INT(11)
+)
+RETURNS INTEGER DETERMINISTIC
+BEGIN
+  DECLARE _year INTEGER;
+  DECLARE _month INTEGER;
+  DECLARE _number INTEGER;
+  DECLARE _start INTEGER DEFAULT 65;
+  DECLARE _chrono VARCHAR(200);
+  DECLARE _count INTEGER DEFAULT 0;
+
+  IF _time IS NULL THEN
+    SELECT DATE_FORMAT(now(), "%Y") INTO _year;
+    SELECT DATE_FORMAT(now(), "%m") INTO _month;
+  ELSE
+    SELECT DATE_FORMAT(FROM_UNIXTIME(_time), "%Y") INTO _year;
+    SELECT DATE_FORMAT(FROM_UNIXTIME(_time), "%m") INTO _month;
+  END IF;
+
+  IF _month >= 10 THEN
+    SELECT _year + 1 INTO _year;
+  END IF;
+  RETURN _year;
+END$
+ 
+DELIMITER ;

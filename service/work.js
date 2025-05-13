@@ -47,7 +47,6 @@ class Work extends Entity {
     if (!nullValue(siteId)) {
       opt.siteId = siteId;
     }
-    this.debug("AAA:101", JSON.stringify(opt))
     let data = await this.db.await_proc('work_list', opt);
     this.output.list(data);
   }

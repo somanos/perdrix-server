@@ -38,6 +38,9 @@ BEGIN
   ALTER TABLE _view ADD column city VARCHAR(200);
   ALTER TABLE _view ADD column `type` VARCHAR(100);
   ALTER TABLE _view ADD column `page` BIGINT;
+  ALTER TABLE _view ADD column `bill` BIGINT;
+  ALTER TABLE _view ADD column `quote` BIGINT;
+  ALTER TABLE _view ADD column `note` BIGINT;
   ALTER TABLE _view ADD column `site` JSON;
   SET @stm = "ORDER BY";
   IF JSON_TYPE(_filter) = 'ARRAY' AND JSON_LENGTH(_filter)>0 THEN 
@@ -54,11 +57,39 @@ BEGIN
   ELSE
     SELECT CONCAT(@stm, " ", "ctime desc") INTO @stm;
   END IF;
+
+  DROP TABLE IF EXISTS _count_b;
+  CREATE TEMPORARY TABLE _count_b(
+    workId INTEGER,
+    count INTEGER,
+    PRIMARY KEY(workId)
+  );
+  INSERT INTO _count_b SELECT workId, count(*) FROM bill GROUP BY workId;
+
+  DROP TABLE IF EXISTS _count_q;
+  CREATE TEMPORARY TABLE _count_q(
+    workId INTEGER,
+    count INTEGER,
+    PRIMARY KEY(workId)
+  );
+  INSERT INTO _count_q SELECT workId, count(*) FROM quotation GROUP BY workId;
+
+  DROP TABLE IF EXISTS _count_n;
+  CREATE TEMPORARY TABLE _count_n(
+    workId INTEGER,
+    count INTEGER,
+    PRIMARY KEY(workId)
+  );
+  INSERT INTO _count_n SELECT workId, count(*) FROM note GROUP BY workId;
+
   INSERT INTO _view SELECT
     w.*,
     s.city,
     t.tag `type`,
     _page `page`,
+    IFNULL(cb.count, 0) bill,
+    IFNULL(cq.count, 0) quote,
+    IFNULL(cn.count, 0) note,
     JSON_OBJECT(
       'custId', w.custId,
       'countrycode', s.countrycode,
@@ -74,6 +105,9 @@ BEGIN
   FROM work w
     INNER JOIN `site` s ON s.custId=w.custId AND w.siteId=s.id
     LEFT JOIN `workType` t ON t.id=w.category
+    LEFT JOIN _count_b cb ON cb.workId=w.id
+    LEFT JOIN _count_q cq ON cq.workId=w.id
+    LEFT JOIN _count_n cn ON cn.workId=w.id
     WHERE w.custId=_custId AND IFNULL(_siteId, w.siteId)=w.siteId;
   SET @stm = CONCAT("SELECT *, type workType FROM _view", " ", @stm, " ", "LIMIT ?, ?");
   PREPARE stmt FROM @stm;

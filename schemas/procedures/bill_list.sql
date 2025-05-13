@@ -14,6 +14,7 @@ BEGIN
 
   DECLARE _page INTEGER DEFAULT 1;
   DECLARE _custId INTEGER ;
+  DECLARE _fiscalYear INTEGER ;
   DECLARE _siteId INTEGER ;
   DECLARE _status JSON ;
   DECLARE _words TEXT;
@@ -24,45 +25,29 @@ BEGIN
   SELECT IFNULL(JSON_VALUE(_args, "$.order"), 'asc') INTO _order;
   SELECT IFNULL(JSON_VALUE(_args, "$.page"), 1) INTO _page;
   SELECT IFNULL(JSON_VALUE(_args, "$.pagelength"), 45) INTO @rows_per_page;  
-  SELECT JSON_EXTRACT(_args, "$.status") INTO _status;
   SELECT JSON_VALUE(_args, "$.custId") INTO _custId;
   SELECT JSON_VALUE(_args, "$.siteId") INTO _siteId;
+  SELECT IFNULL(JSON_VALUE(_args, "$.fiscalYear"), 0) INTO _fiscalYear;
   CALL yp.pageToLimits(_page, _offset, _range);
 
-  DROP TABLE IF EXISTS _filter;
-  CREATE TEMPORARY TABLE _filter ( val INTEGER);
-  IF JSON_TYPE(_status) = 'ARRAY' AND JSON_LENGTH(_status)>0 THEN 
-    WHILE _i < JSON_LENGTH(_status) DO 
-      INSERT INTO _filter SELECT JSON_VALUE(_status, CONCAT("$[", _i, "]"));
-      SELECT _i + 1 INTO _i;
-    END WHILE;
-  ELSE 
-    INSERT INTO _filter SELECT DISTINCT `status` FROM bill;
-  END IF;
+  -- DROP TABLE IF EXISTS _filter;
+  -- CREATE TEMPORARY TABLE _filter ( val INTEGER);
+  -- IF JSON_TYPE(_status) = 'ARRAY' AND JSON_LENGTH(_status)>0 THEN 
+  --   WHILE _i < JSON_LENGTH(_status) DO 
+  --     INSERT INTO _filter SELECT JSON_VALUE(_status, CONCAT("$[", _i, "]"));
+  --     SELECT _i + 1 INTO _i;
+  --   END WHILE;
+  -- ELSE 
+  --   INSERT INTO _filter SELECT DISTINCT `status` FROM bill;
+  -- END IF;
 
   SELECT id FROM yp.entity WHERE db_name=database() INTO _hub_id;
 
   SELECT
-    w.*,
-    w.id workId,
-    b.id billId,
+    b.*,
     t.tag `type`,
     t.tag `workType`,
     _page `page`,
-    JSON_OBJECT(
-      'id', b.id,
-      'custId', w.custId,
-      'chrono', b.chrono,
-      'description', b.description,
-      'ht', b.ht,
-      'tva', b.tva,
-      'ttc', b.ttc,
-      'nid', b.docId,
-      'hub_id', _hub_id,
-      'filepath', filepath(b.docId),
-      'ctime', b.ctime,
-      'status', b.status
-    ) `bill`,
     JSON_OBJECT(
       'custId', w.custId,
       'countrycode', s.countrycode,
@@ -75,12 +60,13 @@ BEGIN
       'siteId', s.id,
       'id', s.id
     ) `site`
-  FROM work w
-    LEFT JOIN bill b ON w.custId=b.custId AND w.id=b.workId
-    INNER JOIN `site` s ON s.custId=w.custId AND w.siteId=s.id
-    -- INNER JOIN `_filter` f ON f.val=b.status
+  FROM bill b
+    INNER JOIN work w ON w.id=b.workId
+    INNER JOIN `site` s ON w.siteId=s.id
     LEFT JOIN `workType` t ON t.id=w.category
-    WHERE w.custId=_custId
+    WHERE 
+      IF(_custId IS NULL, 1, w.custId=_custId) AND 
+      IF(_fiscalYear REGEXP "^ *([0-9]{4,4}) *$", fiscalYear=_fiscalYear, 1)
     ORDER BY b.ctime DESC
     LIMIT _offset ,_range;
 END$

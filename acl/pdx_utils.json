@@ -1,5 +1,11 @@
 {
   "services": {
+    "fiscal_years": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
+    },
     "get_env": {
       "scope": "hub",
       "permission": {

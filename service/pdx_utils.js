@@ -6,6 +6,20 @@ const {
 class PerdrixUtils extends Entity {
 
   /**
+   * 
+   */
+  async fiscal_years() {
+    let sql = `
+      SELECT fiscalYear name, fiscalYear content FROM bill GROUP BY fiscalYear 
+      ORDER BY fiscalYear DESC
+    `;
+    let data = await this.db.await_query(sql);
+    this.output.list(data);
+  }
+
+
+
+  /**
     * 
     */
   async get_env() {
@@ -50,7 +64,7 @@ class PerdrixUtils extends Entity {
     if (!l.length || !postcode || postcode.length < 5) {
       return this.output.data({});
     }
-    if(l[0]){
+    if (l[0]) {
       l[0] = l[0].replace(/[\-\/][0-9]+$/, '');
     }
     let words = l.join('+');
@@ -94,7 +108,7 @@ class PerdrixUtils extends Entity {
     } else {
       if (!/^.+\*$/.test(words)) words = words + "*";
     }
-    this.debug("AAA:101 seo_search", JSON.stringify({ words, page }),  JSON.stringify(tables))
+    this.debug("AAA:101 seo_search", JSON.stringify({ words, page }), JSON.stringify(tables))
     data = await this.db.await_proc('seo_search', { words, page }, tables);
     this.output.list(data);
   }
