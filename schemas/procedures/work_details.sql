@@ -10,21 +10,12 @@ BEGIN
   SELECT id FROM yp.entity WHERE db_name=DATABASE() INTO _hub_id;
   SELECT
     w.*,
+    w.id workId,
     q.id quoteId,
     t.tag `type`,
-    JSON_OBJECT(
-      'chrono', q.chrono,
-      'description', q.description,
-      'ht', q.ht,
-      'tva', q.tva,
-      'ttc', q.ttc,
-      'discount', q.discount,
-      'nid', q.docId,
-      'hub_id', _hub_id,
-      'filepath', filepath(q.docId),
-      'ctime', q.ctime,
-      'status', q.status
-    ) `quote`,
+    (SELECT count(*) FROM bill WHERE workId=_workId) bill,
+    (SELECT count(*) FROM quotation WHERE workId=_workId) quote,
+    (SELECT count(*) FROM note WHERE workId=_workId) note,
     JSON_OBJECT(
       'countrycode', s.countrycode,
       'location', s.location,

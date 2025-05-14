@@ -35,6 +35,7 @@ BEGIN
 
   DROP TABLE IF EXISTS _view;
   CREATE TEMPORARY TABLE _view LIKE work;
+  ALTER TABLE _view ADD column workId INTEGER;
   ALTER TABLE _view ADD column city VARCHAR(200);
   ALTER TABLE _view ADD column `type` VARCHAR(100);
   ALTER TABLE _view ADD column `page` BIGINT;
@@ -84,6 +85,7 @@ BEGIN
 
   INSERT INTO _view SELECT
     w.*,
+    w.id workId,
     s.city,
     t.tag `type`,
     _page `page`,

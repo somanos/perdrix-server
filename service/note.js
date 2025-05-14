@@ -9,9 +9,9 @@ class Poc extends Entity {
    */
   async create() {
     let args = this.input.get('args')
-    this.debug("AAA:12", JSON.stringify(args))
-    let data = await this.db.await_proc('note_create', args);
-    this.output.data(data);
+    let note = await this.db.await_proc('note_create', args);
+    let work = await this.db.await_proc('work_details', note.workId);
+    this.output.data(work);
   }
 
   /**

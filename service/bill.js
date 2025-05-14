@@ -37,7 +37,6 @@ class Bill extends Sales {
     } else {
       node = await this.store(data)
     }
-    this.debug("AAA:40", data, node)
     await this.db.await_proc('bill_update', { docId: node.nid, id: bill.id });
     let work = await this.db.await_proc('work_details', bill.workId);
     this.output.data(work);
@@ -50,7 +49,6 @@ class Bill extends Sales {
     const custId = this.input.get('custId');
     const fiscalYear = this.input.get('fiscalYear');
     const page = this.input.get(Attr.page);
-    this.debug("AAA:126", JSON.stringify({ custId, page, fiscalYear }))
     let opt = { page };
     if (/[0-9]{4,4}/.test(fiscalYear)) {
       opt.fiscalYear = fiscalYear;
