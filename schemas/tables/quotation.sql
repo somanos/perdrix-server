@@ -7,6 +7,7 @@ CREATE TABLE
     `siteId` int (10) unsigned DEFAULT NULL,
     `workId` int (10) unsigned DEFAULT NULL,
     `chrono` varchar(200) DEFAULT NULL,
+    `fiscalYear` int(11) DEFAULT NULL,
     `description` text DEFAULT NULL,
     `ht` decimal(10, 2) DEFAULT NULL,
     `tva` decimal(10, 3) DEFAULT NULL,

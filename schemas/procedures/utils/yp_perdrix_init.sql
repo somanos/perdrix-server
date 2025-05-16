@@ -21,6 +21,8 @@ BEGIN
 
   SELECT db_name, e.id, e.home_id FROM vhost v INNER JOIN entity e USING(id) WHERE 
     fqdn=_vhost INTO _db_name, _hub_id, _home_id;
+  
+  REPLACE INTO sys_conf SELECT 'perdrix-hub', _hub_id;
 
   SELECT owner_id FROM hub WHERE id=_hub_id INTO _owner_id;
 

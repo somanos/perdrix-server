@@ -39,7 +39,7 @@ BEGIN
     _home_id home_id,
     _hub_id hub_id
   FROM bill b
-    LEFT JOIN media m ON b.docId = m.id
+    LEFT JOIN media m ON m.file_path=concat('/factures/',fiscalYear,'/odt/fac', chrono, '.odt')
     WHERE b.workId=_workId
     ORDER BY b.ctime DESC
     LIMIT _offset ,_range;

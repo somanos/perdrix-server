@@ -27,6 +27,14 @@ class PerdrixUtils extends Entity {
     data.hub_id = await this.yp.await_func('get_sysconf', 'perdrix-hub');
     data.app_home = await this.yp.await_func('get_sysconf', 'app_host');
     data.map_tiler_api_key = await this.yp.await_func('get_sysconf', 'map-tiler-api-key');
+    let id = await this.db.await_func('node_id_from_path', '/devis');
+    if (id) {
+      data.quote_home = await this.db.await_proc("mfs_access_node", this.uid, id);
+    }
+    id = await this.db.await_func('node_id_from_path', '/factures');
+    if (id) {
+      data.bill_home = await this.db.await_proc("mfs_access_node", this.uid, id);
+    }
     if (this.input.host() == data.app_home) {
       data.genderList = await this.db.await_query(
         "SELECT shortTag label, id, longTag FROM gender"

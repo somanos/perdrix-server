@@ -40,7 +40,7 @@ BEGIN
     _home_id home_id,
     _hub_id hub_id
   FROM quotation q
-    LEFT JOIN media m ON q.docId = m.id
+    LEFT JOIN media m ON m.file_path=concat('/devis/',fiscalYear,'/odt/dev', chrono, '.odt')
     WHERE q.workId=_workId
     ORDER BY q.ctime DESC
     LIMIT _offset ,_range;
