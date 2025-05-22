@@ -24,6 +24,24 @@ class Poc extends Entity {
     this.output.list(data);
   }
 
+  /**
+  * 
+  */
+  async remove() {
+    const noteId = this.input.get(Attr.id) || 0;
+    await this.db.await_proc('note_remove', noteId);
+    this.output.data({ noteId });
+  }
+
+  /**
+   * 
+   */
+  async update() {
+    const args = this.input.get('args');
+    this.debug("AAA:144", JSON.stringify(args));
+    let data = await this.db.await_proc('note_update', args);
+    this.output.data(data);
+  }
 }
 
 

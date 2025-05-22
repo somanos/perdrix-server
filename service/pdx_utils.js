@@ -24,6 +24,8 @@ class PerdrixUtils extends Entity {
     */
   async get_env() {
     let data = {};
+    let { privilege } = await this.db.await_proc("mfs_access_node", this.uid, this.home_id) || {}
+
     data.hub_id = await this.yp.await_func('get_sysconf', 'perdrix-hub');
     data.app_home = await this.yp.await_func('get_sysconf', 'app_host');
     data.map_tiler_api_key = await this.yp.await_func('get_sysconf', 'map-tiler-api-key');
@@ -57,6 +59,7 @@ class PerdrixUtils extends Entity {
       data.pocRoles = await this.db.await_query(
         'SELECT DISTINCT role label, role FROM poc'
       );
+      data.privilege = privilege;
     }
     this.output.data(data);
   }

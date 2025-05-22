@@ -1,0 +1,13 @@
+
+DELIMITER $
+
+DROP PROCEDURE IF EXISTS `bill_remove`$
+CREATE PROCEDURE `bill_remove`(
+  IN _id INTEGER
+)
+BEGIN
+  DELETE FROM bill WHERE id = _id;
+END$
+
+
+DELIMITER ;

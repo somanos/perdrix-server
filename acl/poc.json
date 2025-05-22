@@ -12,6 +12,18 @@
         "src": "read"
       }
     },
+    "remove": {
+      "scope": "hub",
+      "permission": {
+        "src": "admin"
+      }
+    },
+    "update": {
+      "scope": "hub",
+      "permission": {
+        "src": "write"
+      }
+    },
     "list": {
       "scope": "hub",
       "permission": {

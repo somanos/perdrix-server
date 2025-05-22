@@ -77,6 +77,23 @@ class Bill extends Sales {
     this.output.data(data);
   }
 
+  /**
+   * 
+   */
+  async remove() {
+    const billId = this.input.get(Attr.id) || 0;
+    await this.db.await_proc('bill_remove', billId);
+    this.output.data({ billId });
+  }
+  
+  /**
+    * 
+    */
+  async update() {
+    const args = this.input.get('args');
+    let data = await this.db.await_proc('bill_update', args);
+    this.output.data(data);
+  }
 }
 
 

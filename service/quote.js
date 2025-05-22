@@ -1,4 +1,7 @@
 const { Sales } = require('./lib/sales');
+const {
+  Attr
+} = require('@drumee/server-essentials');
 
 class Quote extends Sales {
 
@@ -39,6 +42,23 @@ class Quote extends Sales {
     this.output.data(work);
   }
 
+  /**
+   * 
+   */
+  async remove() {
+    const quoteId = this.input.get(Attr.id) || 0;
+    await this.db.await_proc('quote_remove', quoteId);
+    this.output.data({ quoteId });
+  }
+
+  /**
+  * 
+  */
+  async update() {
+    const args = this.input.get('args');
+    let data = await this.db.await_proc('quote_update', args);
+    this.output.data(data);
+  }
 }
 
 

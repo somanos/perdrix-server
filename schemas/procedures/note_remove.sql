@@ -1,0 +1,13 @@
+
+DELIMITER $
+
+DROP PROCEDURE IF EXISTS `note_remove`$
+CREATE PROCEDURE `note_remove`(
+  IN _id INTEGER
+)
+BEGIN
+  DELETE FROM note WHERE id = _id;
+END$
+
+
+DELIMITER ;

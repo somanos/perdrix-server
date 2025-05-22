@@ -18,6 +18,18 @@
         "src": "read"
       }
     },
+    "remove": {
+      "scope": "hub",
+      "permission": {
+        "src": "admin"
+      }
+    },
+    "update": {
+      "scope": "hub",
+      "permission": {
+        "src": "write"
+      }
+    },
     "add_poc": {
       "scope": "hub",
       "permission": {

@@ -3,7 +3,7 @@ DELIMITER $
 
 DROP FUNCTION IF EXISTS `site_exists`$
 CREATE FUNCTION `site_exists`(
-  IN _args JSON
+  _args JSON
 )
 RETURNS INTEGER DETERMINISTIC
 
