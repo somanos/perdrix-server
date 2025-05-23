@@ -45,7 +45,6 @@ BEGIN
     `type` VARCHAR(16),
     content JSON,
     reference JSON,
-    ctime INT(11) UNSIGNED,
     PRIMARY KEY (itemId, `type`)
   );
 
@@ -61,23 +60,25 @@ BEGIN
       r.relevance,
       'site',
       JSON_OBJECT(
+        'id', s.id,
         'siteId', s.id,
         'location', s.location,
         'geometry', s.geometry,
         'city', s.city,
         'postcode', s.postcode
       ),
-      JSON_OBJECT(
-        'custId', c.id,
-        'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
-        'companyclass', cc.tag,
-        'gender', g.shortTag,
-        'location', c.location,
-        'city', c.city,
-        'geometry', c.geometry,
-        'postcode', c.postcode
-      ),
-      s.ctime
+      JSON_ARRAY(
+        JSON_OBJECT(
+          'custId', c.id,
+          'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
+          'companyclass', cc.tag,
+          'gender', g.shortTag,
+          'location', c.location,
+          'city', c.city,
+          'geometry', c.geometry,
+          'postcode', c.postcode
+        )
+      )
       FROM `site` s 
         INNER JOIN seo_object o USING(id) 
         INNER JOIN customer c ON c.id=s.custId AND s.id=o.id
@@ -94,6 +95,7 @@ BEGIN
       r.relevance,
       'customer',
       JSON_OBJECT(
+        'id', c.id,
         'custId', c.id,
         'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
         'companyclass', cc.tag,
@@ -103,8 +105,7 @@ BEGIN
         'geometry', c.geometry,
         'postcode', c.postcode
       ),
-      JSON_OBJECT(),
-      c.ctime
+      JSON_ARRAY()
       FROM customer c 
         INNER JOIN seo_object o USING(id) 
         INNER JOIN _results r USING(ref_id) 
@@ -120,6 +121,7 @@ BEGIN
       r.relevance,
       'poc',
       JSON_OBJECT(
+        'id', p.id,
         'pocId', p.id,
         'gender', g.shortTag,
         'lastname', p.lastname,
@@ -128,8 +130,7 @@ BEGIN
         'email', p.email,
         'phones', p.phones
       ) poc,
-      JSON_OBJECT(),
-      p.ctime
+      JSON_ARRAY()
       FROM poc p
         INNER JOIN seo_object o USING(id) 
         INNER JOIN _results r USING(ref_id)
@@ -144,25 +145,38 @@ BEGIN
       r.relevance,
       'work',
       JSON_OBJECT(
+        'id', w.id,
         'type',  wt.tag,
         'siteId', s.id,
         'workId', w.id,
         'location', s.location,
         'description', w.description,
         'city', s.city,
-        'postcode', s.postcode
+        'postcode', s.postcode,
+        'ctime', w.ctime
       ),
-      JSON_OBJECT(
-        'custId', c.id,
-        'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
-        'companyclass', cc.tag,
-        'gender', g.shortTag,
-        'location', c.location,
-        'city', c.city,
-        'geometry', c.geometry,
-        'postcode', c.postcode
-      ),
-      w.ctime
+      JSON_ARRAY(
+        JSON_OBJECT(
+          'id', c.id,
+          'custId', c.id,
+          'gender', g.shortTag,
+          'companyclass', cc.tag,
+          'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
+          'location', c.location,
+          'site', c.location,
+          'geometry', c.geometry,
+          'city', c.city,
+          'postcode', c.postcode
+        ),
+        JSON_OBJECT(
+          'id', s.id,
+          'siteId', s.id,
+          'location', s.location,
+          'geometry', s.geometry,
+          'city', s.city,
+          'postcode', s.postcode
+        )
+      )
       FROM work w
         INNER JOIN seo_object o USING(id) 
         INNER JOIN _results r USING(ref_id)

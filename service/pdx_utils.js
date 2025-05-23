@@ -102,15 +102,28 @@ class PerdrixUtils extends Entity {
   */
   async search() {
     let words = this.input.get('words') || 'nom';
-    let tables = this.input.get('tables');
+    let tables = this.input.get('tables') || [];
+    this.debug("AAA:106 Got", JSON.stringify(tables));
+    let search_by_id = 0;    if (/^[0-9]+(\.)*[0-9]*.+$/i.test(words)) {
+      if (/^[0-9]{2,2}\.[0-9]{1,4}[A-Z]{1,1}$/i.test(words)) {
+        tables = ['quotation'];
+      // } else if (/^[0-9]{2,2}\.[0-9]{1,4}$/.test(words)) {
+      //   tables = ['bill'];
+      } else if (/^[0-9]{2,2}\..+$/i.test(words)) {
+        tables = ['bill', 'quotation'];
+      } else {
+        tables = ['customer', 'poc', 'site', 'work', 'bill', 'quotation'];
+      }
+      words = words + ".*$"
+      search_by_id = 1;
+    }
     const page = this.input.get(Attr.page);
     if (!page) page = 1;
     let data;
-    if (/^[0-9]+$/.test(words)) {
+    this.debug("AAA:118 Got", JSON.stringify(tables), JSON.stringify({ words, page }))
+    if (search_by_id) {
       data = await this.db.await_proc('search_by_id', { words, page }, tables);
       this.output.list(data);
-      this.debug("AAA:105 Got", { words })
-
       return
     }
 
