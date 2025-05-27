@@ -38,6 +38,19 @@ class Customer extends Entity {
     this.output.list(data);
   }
 
+  /**
+   * 
+   */
+  async customer_update() {
+    let args = this.input.get('args');
+    let id = args.id || args.custId
+    if(!id){
+      return this.exception.user('MISSING_ID')
+    }
+    let data = await this.db.await_proc('customer_create', args);
+    this.output.list(data);
+  }
+
 
 
   /**

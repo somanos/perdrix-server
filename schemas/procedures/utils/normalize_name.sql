@@ -11,7 +11,9 @@ CREATE FUNCTION `normalize_name`(
 RETURNS VARCHAR(255) DETERMINISTIC
 BEGIN
   DECLARE _normalized VARCHAR(255);
-
+  SELECT IFNULL(_firstname, '') INTO _firstname;
+  SELECT IFNULL(_lastname, '') INTO _lastname;
+  SELECT CONCAT(UCASE(LEFT(_firstname, 1)), SUBSTRING(_firstname, 2)) INTO _firstname;
   IF _category=0 THEN
     SET _normalized = UPPER(_company);
   ELSE

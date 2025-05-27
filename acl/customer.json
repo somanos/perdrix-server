@@ -6,6 +6,13 @@
         "src": "write"
       }
     },
+    "update": {
+      "scope": "hub",
+      "permission": {
+        "src": "admin"
+      },
+      "method": "customer_update"
+    },
     "list": {
       "scope": "hub",
       "permission": {

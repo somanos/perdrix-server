@@ -41,6 +41,7 @@ BEGIN
   SELECT IFNULL(JSON_VALUE(_args, "$.postcode"), 99999) INTO _postcode;
   SELECT IFNULL(JSON_VALUE(_args, "$.citycode"), _postcode) INTO _citycode;
   SELECT IFNULL(JSON_VALUE(_args, "$.city"), "") INTO _city;
+  SELECT IFNULL(JSON_VALUE(_args, "$.id"), "") INTO _id;
   SELECT IFNULL(JSON_VALUE(_args, "$.countrycode"), 'France') INTO  _countrycode;
   SELECT JSON_EXTRACT(_args, "$.geometry") INTO _geometry;
 
@@ -51,26 +52,9 @@ BEGIN
   SELECT id FROM country WHERE code=_countrycode INTO _ccode;
   SELECT id FROM companyClass WHERE tag=_companyclass INTO _companycode;
 
-  INSERT INTO customer 
-    SELECT NULL,
-    _category,
-    _companycode,
-    _companyname,
-    _gender,
-    _lastname,
-    _firstname,
-    _location,
-    _postcode,
-    _citycode,
-    _city,
-    _ccode,
-    _geometry,
-    UNIX_TIMESTAMP();
-
-  SELECT max(id) FROM `customer` INTO _id;
-  IF skip_number(_id) THEN
+  IF _id IS NULL THEN 
     INSERT INTO customer 
-      SELECT _id+1,
+      SELECT NULL,
       _category,
       _companycode,
       _companyname,
@@ -84,7 +68,42 @@ BEGIN
       _ccode,
       _geometry,
       UNIX_TIMESTAMP();
-    DELETE FROM `customer` WHERE id=_id;
+
+    SELECT max(id) FROM `customer` INTO _id;
+    IF skip_number(_id) THEN
+      INSERT INTO customer 
+        SELECT _id+1,
+        _category,
+        _companycode,
+        _companyname,
+        _gender,
+        _lastname,
+        _firstname,
+        _location,
+        _postcode,
+        _citycode,
+        _city,
+        _ccode,
+        _geometry,
+        UNIX_TIMESTAMP();
+      DELETE FROM `customer` WHERE id=_id;
+    END IF;
+  ELSE
+    REPLACE INTO customer 
+      SELECT _id,
+      _category,
+      _companycode,
+      _companyname,
+      _gender,
+      _lastname,
+      _firstname,
+      _location,
+      _postcode,
+      _citycode,
+      _city,
+      _ccode,
+      _geometry,
+      UNIX_TIMESTAMP();
   END IF;
 
   SELECT JSON_OBJECT(
