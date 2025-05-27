@@ -70,7 +70,7 @@ BEGIN
       JSON_ARRAY(
         JSON_OBJECT(
           'custId', c.id,
-          'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
+          'custName', normalize_name(c.category, c.company, c.lastname, c.firstname),
           'companyclass', cc.tag,
           'gender', g.shortTag,
           'location', c.location,
@@ -97,7 +97,7 @@ BEGIN
       JSON_OBJECT(
         'id', c.id,
         'custId', c.id,
-        'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
+        'custName', normalize_name(c.category, c.company, c.lastname, c.firstname),
         'companyclass', cc.tag,
         'gender', g.shortTag,
         'location', c.location,
@@ -126,7 +126,7 @@ BEGIN
         'gender', g.shortTag,
         'lastname', p.lastname,
         'firstname', p.firstname,
-        'pocName', CONCAT(p.lastname, IF(p.firstname != '', CONCAT(' ', p.firstname), '')),
+        'pocName', normalize_name(1, '', p.lastname, p.firstname) ,
         'email', p.email,
         'phones', p.phones
       ) poc,
@@ -161,7 +161,7 @@ BEGIN
           'custId', c.id,
           'gender', g.shortTag,
           'companyclass', cc.tag,
-          'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
+          'custName', normalize_name(c.category, c.company, c.lastname, c.firstname),
           'location', c.location,
           'site', c.location,
           'geometry', c.geometry,

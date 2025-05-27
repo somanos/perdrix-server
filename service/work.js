@@ -100,6 +100,15 @@ class Work extends Entity {
   /**
   * 
   */
+  async update() {
+    let args = this.input.get('args');
+    let data = await this.db.await_proc('work_update', args);
+    this.output.list(data);
+  }
+
+  /**
+  * 
+  */
   async quotations() {
     const workId = this.input.get('workId');
     const page = this.input.get(Attr.page) || 1;

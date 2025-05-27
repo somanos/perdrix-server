@@ -80,9 +80,9 @@ class Bill extends Sales {
   /**
    * 
    */
-  async remove() {
+  async unassign() {
     const billId = this.input.get(Attr.id) || 0;
-    await this.db.await_proc('bill_remove', billId);
+    await this.db.await_proc('bill_unassign', billId);
     this.output.data({ billId });
   }
   

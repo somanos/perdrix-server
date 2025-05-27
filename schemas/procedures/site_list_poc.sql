@@ -48,7 +48,7 @@ BEGIN
       'city', c.city,
       'geometry', c.geometry,
       'ctime', c.ctime,
-      'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), '')))
+      'custName', normalize_name(c.category, c.company, c.lastname, c.firstname)
     )`customer`
   FROM site_poc sp
     INNER JOIN `site` s ON s.id=sp.siteId

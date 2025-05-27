@@ -60,7 +60,7 @@ BEGIN
           'custId', c.id,
           'gender', g.shortTag,
           'companyclass', cc.tag,
-          'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
+          'custName', normalize_name(c.category, c.company, c.lastname, c.firstname),
           'location', c.location,
           'site', c.location,
           'geometry', c.geometry,
@@ -91,7 +91,7 @@ BEGIN
         LEFT JOIN media m ON m.file_path=concat('/devis/',fiscalYear,'/odt/dev', chrono, '.odt')
         LEFT JOIN gender g ON g.id=c.gender
         LEFT JOIN companyClass cc ON c.type = cc.id
-        WHERE q.chrono REGEXP _words;
+        WHERE c.id > 0 AND q.chrono REGEXP _words;
   END IF;
 
   IF _tables IS NULL OR json_array_contains(_tables, "bill") THEN
@@ -121,7 +121,7 @@ BEGIN
           'custId', c.id,
           'gender', g.shortTag,
           'companyclass', cc.tag,
-          'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
+          'custName', normalize_name(c.category, c.company, c.lastname, c.firstname),
           'location', c.location,
           'site', c.location,
           'geometry', c.geometry,
@@ -152,7 +152,7 @@ BEGIN
         LEFT JOIN media m ON m.file_path=concat('/devis/',fiscalYear,'/odt/dev', chrono, '.odt')
         LEFT JOIN gender g ON g.id=c.gender
         LEFT JOIN companyClass cc ON c.type = cc.id
-        WHERE b.chrono REGEXP _words;
+        WHERE c.id > 0 AND b.chrono REGEXP _words;
   END IF;
 
   IF _tables IS NULL OR json_array_contains(_tables, "site") THEN
@@ -172,7 +172,7 @@ BEGIN
       JSON_ARRAY(
         JSON_OBJECT(
           'custId', c.id,
-          'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
+          'custName', normalize_name(c.category, c.company, c.lastname, c.firstname),
           'companyclass', cc.tag,
           'gender', g.shortTag,
           'location', c.location,
@@ -185,7 +185,7 @@ BEGIN
         INNER JOIN customer c ON c.id=s.custId
         LEFT JOIN gender g ON g.id=c.gender
         LEFT JOIN companyClass cc ON c.type = cc.id
-        WHERE s.id REGEXP _words;
+        WHERE c.id > 0 AND s.id REGEXP _words;
   END IF;
 
   IF _tables IS NULL OR json_array_contains(_tables, "customer") THEN
@@ -195,7 +195,7 @@ BEGIN
       JSON_OBJECT(
         'id', c.id,
         'custId', c.id,
-        'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
+        'custName', normalize_name(c.category, c.company, c.lastname, c.firstname),
         'companyclass', cc.tag,
         'gender', g.shortTag,
         'location', c.location,
@@ -207,7 +207,7 @@ BEGIN
       FROM customer c 
         LEFT JOIN companyClass cc ON c.type = cc.id
         LEFT JOIN gender g ON g.id=c.gender
-        WHERE c.id REGEXP _words;
+        WHERE c.id > 0 AND c.id REGEXP _words;
   END IF;
 
   IF _tables IS NULL OR json_array_contains(_tables, "work") THEN
@@ -231,7 +231,7 @@ BEGIN
           'custId', c.id,
           'gender', g.shortTag,
           'companyclass', cc.tag,
-          'custName', IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))),
+          'custName', normalize_name(c.category, c.company, c.lastname, c.firstname),
           'location', c.location,
           'site', c.location,
           'geometry', c.geometry,
@@ -252,7 +252,7 @@ BEGIN
         INNER JOIN customer c ON c.id=w.custId AND w.custId=q.custId
         LEFT JOIN gender g ON g.id=c.gender
         LEFT JOIN companyClass cc ON c.type = cc.id
-        WHERE w.id REGEXP _words;
+        WHERE c.id > 0 AND w.id REGEXP _words;
   END IF;
 
   SELECT * FROM _view LIMIT _offset ,_range;

@@ -9,7 +9,7 @@ BEGIN
 
   SELECT 
     c.id custId, 
-    IF(c.category=0, c.company, CONCAT(c.lastname, IF(c.firstname != '', CONCAT(' ', c.firstname), ''))) custName,
+    normalize_name(c.category, c.company, c.lastname, c.firstname) custName,
     c.ctime,
     c.category,
     cc.tag companyclass,
