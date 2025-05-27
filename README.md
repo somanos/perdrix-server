@@ -1,5 +1,5 @@
 # Perdrix Server
-(c) 2025 Somanos Sar Licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**
+(c) 2025 Somanos Sar Licensed under the **Apache License V2**
 
 See [LICENSE](LICENSE) for full terms.
 
