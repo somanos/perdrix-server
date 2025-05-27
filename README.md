@@ -3,10 +3,10 @@
 
 See [LICENSE](LICENSE) for full terms.
 
-# This module is the Server part of the project Perdrix, designed as a simple ERP
+This module is the Server part of the project Perdrix, designed as a simple ERP
 
 # Dependencies
-This module is a Drumee plugin. It is intended to run withind a Drumee Server Runtime Environment. 
+This module is a Drumee plugin. It is intended to run withind a [Drumee Server Runtime Environment](https://github.com/drumee/documentation/wiki/Developer-Corner). 
 
 This module is designed to serve data to the [perdrix-ui module](https://github.com/somanos/perdrix-ui).
 
