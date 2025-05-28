@@ -14,6 +14,7 @@ BEGIN
   DECLARE _companyname VARCHAR(512);
   DECLARE _companyclass VARCHAR(128) DEFAULT "";
   DECLARE _companycode INTEGER;
+  DECLARE _streetcode INTEGER;
   DECLARE _ccode INTEGER;
   DECLARE _gender VARCHAR(128) DEFAULT 0;
   DECLARE _lastname VARCHAR(512);
@@ -41,18 +42,32 @@ BEGIN
   SELECT IFNULL(JSON_VALUE(_args, "$.postcode"), 99999) INTO _postcode;
   SELECT IFNULL(JSON_VALUE(_args, "$.citycode"), _postcode) INTO _citycode;
   SELECT IFNULL(JSON_VALUE(_args, "$.city"), "") INTO _city;
-  SELECT IFNULL(JSON_VALUE(_args, "$.id"), "") INTO _id;
+  SELECT IFNULL(JSON_VALUE(_args, "$.id"), 0) INTO _id;
   SELECT IFNULL(JSON_VALUE(_args, "$.countrycode"), 'France') INTO  _countrycode;
   SELECT JSON_EXTRACT(_args, "$.geometry") INTO _geometry;
+
+
+  SELECT id FROM companyClass WHERE tag=_companyclass INTO _companycode;
+
+  IF _companycode IS NULL THEN 
+    INSERT INTO companyClass SELECT NULL, _companyclass;
+    SELECT id FROM companyClass WHERE tag=_companyclass INTO _companycode;
+  END IF;
+
+  SELECT id FROM streetType WHERE longTag=_streettype OR shortTag=_streettype 
+    LIMIT 1 INTO _streetcode;
+  IF _streetcode IS NULL THEN 
+    INSERT INTO streetType SELECT NULL, _streettype;
+    SELECT id FROM cstreetType WHERE tag=_streettype INTO _streetcode;
+  END IF;
 
   SELECT JSON_ARRAY(
     _housenumber, _streettype, _streetname, _additional
   ) INTO _location;
 
   SELECT id FROM country WHERE code=_countrycode INTO _ccode;
-  SELECT id FROM companyClass WHERE tag=_companyclass INTO _companycode;
 
-  IF _id IS NULL THEN 
+  IF _id IS NULL OR _id=0 THEN 
     INSERT INTO customer 
       SELECT NULL,
       _category,

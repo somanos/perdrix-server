@@ -13,7 +13,6 @@ class Customer extends Entity {
     const order = this.input.get(Attr.order) || 'asc';
     const page = this.input.get(Attr.page);
     let words = this.input.get('words') || '^.*$';
-    this.debug("AAA:16", {page, words})
     let data = await this.db.await_proc('customer_list', { words, sort_by, order, page });
     this.output.list(data);
   }
@@ -47,6 +46,7 @@ class Customer extends Entity {
     if(!id){
       return this.exception.user('MISSING_ID')
     }
+    this.debug('AAA:49', JSON.stringify(args))
     let data = await this.db.await_proc('customer_create', args);
     this.output.list(data);
   }
