@@ -24,6 +24,12 @@
         "src": "admin"
       }
     },
+    "transfer": {
+      "scope": "hub",
+      "permission": {
+        "src": "admin"
+      }
+    },
     "update": {
       "scope": "hub",
       "permission": {

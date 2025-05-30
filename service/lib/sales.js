@@ -146,6 +146,59 @@ class Sales extends DrumeeMfs {
     return null;
   }
 
+  /**
+  * 
+  */
+  async list(type) {
+    const custId = this.input.get('custId');
+    const siteId = this.input.get('siteId') || 0;
+    const fiscalYear = this.input.get('fiscalYear');
+    const page = this.input.get(Attr.page);
+    let opt = { page };
+    if (/[0-9]{4,4}/.test(fiscalYear)) {
+      opt.fiscalYear = fiscalYear;
+    }
+    if (custId) {
+      opt.custId = custId;
+    }
+    if (siteId) {
+      opt.siteId = siteId;
+    }
+    let data = await this.db.await_proc(`${type}_list`, opt);
+    this.output.list(data);
+  }
+
+  /**
+    * 
+    */
+  async balance(type) {
+    const custId = this.input.get('custId') || 0;
+    const siteId = this.input.get('siteId') || 0;
+    const fiscalYear = this.input.get('fiscalYear');
+    let opt = {}
+    if (/[0-9]{4,4}/.test(fiscalYear)) {
+      opt.fiscalYear = fiscalYear;
+    }
+    if (custId) {
+      opt.custId = custId;
+    }
+    if (siteId) {
+      opt.siteId = siteId;
+    }
+    let data = await this.db.await_proc(`${type}_balance`, opt);
+    this.output.data(data);
+  }
+
+  /**
+  * 
+  */
+  async update(type) {
+    const args = this.input.get('args');
+    let data = await this.db.await_proc(`${type}_update`, args);
+    this.output.data(data);
+  }
+
+
 }
 
 

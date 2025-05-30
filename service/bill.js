@@ -45,36 +45,56 @@ class Bill extends Sales {
   /**
    * 
    */
-  async list() {
-    const custId = this.input.get('custId');
-    const fiscalYear = this.input.get('fiscalYear');
-    const page = this.input.get(Attr.page);
-    let opt = { page };
-    if (/[0-9]{4,4}/.test(fiscalYear)) {
-      opt.fiscalYear = fiscalYear;
-    }
-    if (custId) {
-      opt.custId = custId;
-    }
-    let data = await this.db.await_proc('bill_list', opt);
-    this.output.list(data);
+  list() {
+    return super.list('bill')
+    // const custId = this.input.get('custId');
+    // const siteId = this.input.get('siteId') || 0;
+    // const fiscalYear = this.input.get('fiscalYear');
+    // const page = this.input.get(Attr.page);
+    // let opt = { page };
+    // if (/[0-9]{4,4}/.test(fiscalYear)) {
+    //   opt.fiscalYear = fiscalYear;
+    // }
+    // if (custId) {
+    //   opt.custId = custId;
+    // }
+    // if (siteId) {
+    //   opt.siteId = siteId;
+    // }
+    // let data = await this.db.await_proc('bill_list', opt);
+    // this.output.list(data);
   }
 
   /**
    * 
    */
-  async balance() {
-    const custId = this.input.get('custId') || 0;
-    const fiscalYear = this.input.get('fiscalYear');
-    let opt = {}
-    if (/[0-9]{4,4}/.test(fiscalYear)) {
-      opt.fiscalYear = fiscalYear;
-    }
-    if (custId) {
-      opt.custId = custId;
-    }
-    let data = await this.db.await_proc('bill_balance', opt);
-    this.output.data(data);
+  balance() {
+    return super.balance('bill')
+    // const custId = this.input.get('custId') || 0;
+    // const siteId = this.input.get('siteId') || 0;
+    // const fiscalYear = this.input.get('fiscalYear');
+    // let opt = {}
+    // if (/[0-9]{4,4}/.test(fiscalYear)) {
+    //   opt.fiscalYear = fiscalYear;
+    // }
+    // if (custId) {
+    //   opt.custId = custId;
+    // }
+    // if (siteId) {
+    //   opt.siteId = siteId;
+    // }
+    // let data = await this.db.await_proc('bill_balance', opt);
+    // this.output.data(data);
+  }
+
+  /**
+    * 
+    */
+  async update() {
+    return super.update('bill')
+    // const args = this.input.get('args');
+    // let data = await this.db.await_proc('bill_update', args);
+    // this.output.data(data);
   }
 
   /**
@@ -85,15 +105,17 @@ class Bill extends Sales {
     await this.db.await_proc('bill_unassign', billId);
     this.output.data({ billId });
   }
-  
+
   /**
-    * 
-    */
-  async update() {
-    const args = this.input.get('args');
-    let data = await this.db.await_proc('bill_update', args);
-    this.output.data(data);
+   * 
+   */
+  async reassign() {
+    const billId = this.input.get(Attr.id) || 0;
+    const custId = this.input.get('custId') || 0;
+    await this.db.await_proc('bill_reassign', billId, custId);
+    this.output.data({ billId });
   }
+
 }
 
 

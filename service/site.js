@@ -82,10 +82,20 @@ class Site extends Entity {
     if (words !== '^.*$') {
       words = `(?i)${words}`
     }
-    this.debug("AAA:18", { words, sort_by, order, page, custId })
 
     let data = await this.db.await_proc('site_search',
       { words, sort_by, order, page, custId });
+    this.output.list(data);
+  }
+
+  /**
+   * 
+   */
+  async transfer() {
+    const id = this.input.get(Attr.id);
+    const custId = this.input.get('custId');
+    this.debug("AAA:18", { id, custId })
+    let data = await this.db.await_proc('site_transfer', id, custId);
     this.output.list(data);
   }
 

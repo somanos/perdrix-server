@@ -1,8 +1,8 @@
 
 DELIMITER $
 
-DROP PROCEDURE IF EXISTS `bill_list`$
-CREATE PROCEDURE `bill_list`(
+DROP PROCEDURE IF EXISTS `quote_list`$
+CREATE PROCEDURE `quote_list`(
   IN _args JSON
 )
 BEGIN
@@ -33,7 +33,7 @@ BEGIN
   SELECT id FROM yp.entity WHERE db_name=database() INTO _hub_id;
 
   SELECT
-    b.*,
+    q.*,
     t.tag `type`,
     t.tag `workType`,
     _page `page`,
@@ -49,15 +49,15 @@ BEGIN
       'siteId', s.id,
       'id', s.id
     ) `site`
-  FROM bill b
-    INNER JOIN work w ON w.id=b.workId
+  FROM quotation q
+    INNER JOIN work w ON w.id=q.workId
     INNER JOIN `site` s ON w.siteId=s.id
     LEFT JOIN `workType` t ON t.id=w.category
     WHERE 
       IF(_custId IS NULL, 1, w.custId=_custId) AND 
-      IF(_siteId IS NULL, 1, b.siteId=_siteId) AND
+      IF(_siteId IS NULL, 1, q.siteId=_siteId) AND
       IF(_fiscalYear REGEXP "^ *([0-9]{4,4}) *$", fiscalYear=_fiscalYear, 1)
-    ORDER BY b.ctime DESC
+    ORDER BY q.ctime DESC
     LIMIT _offset ,_range;
 END$
 

@@ -1,8 +1,8 @@
 
 DELIMITER $
 
-DROP PROCEDURE IF EXISTS `bill_balance`$
-CREATE PROCEDURE `bill_balance`(
+DROP PROCEDURE IF EXISTS `quote_balance`$
+CREATE PROCEDURE `quote_balance`(
   IN _args JSON
 )
 BEGIN
@@ -16,10 +16,10 @@ BEGIN
   SELECT
     SUM(ttc) ttc,
     SUM(ht) ht
-  FROM bill b
+  FROM quotation q
     WHERE 
-       IF(_custId IS NULL, 1, b.custId=_custId) AND
-       IF(_siteId IS NULL, 1, b.siteId=_siteId) AND
+       IF(_custId IS NULL, 1, q.custId=_custId) AND
+       IF(_siteId IS NULL, 1, q.siteId=_siteId) AND
        IF(_fiscalYear IS NULL, 1, fiscalYear=_fiscalYear);
 END$
 

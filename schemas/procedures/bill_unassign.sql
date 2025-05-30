@@ -1,5 +1,7 @@
 
 DELIMITER $
+-- Bill can not be deleted
+-- Set custId to 0 for potential reassignment later
 
 DROP PROCEDURE IF EXISTS `bill_unassign`$
 CREATE PROCEDURE `bill_unassign`(
