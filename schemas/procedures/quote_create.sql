@@ -34,12 +34,27 @@ BEGIN
     SELECT IFNULL(JSON_VALUE(_site, "$.id"), 0) INTO _siteId;
   END IF;
 
-  REPLACE INTO quotation 
-    SELECT NULL,
+  REPLACE INTO quote (`id`,
+    `custId`,
+    `siteId`,
+    `workId`,
+    `serial`,
+    `version`,
+    `fiscalYear`,
+    `description`,
+    `ht`,
+    `tva`,
+    `ttc`,
+    `discount`,
+    `docId`,
+    `ctime`,
+    `status`
+    ) SELECT NULL,
     _custId,
     _siteId,
     _workId,
-    quote_chrono(_workId),
+    quote_serial(_workId),
+    quote_version(_workId),
     fiscal_year(null),
     _description,
     _ht,
@@ -50,15 +65,31 @@ BEGIN
     UNIX_TIMESTAMP(),  
     0;
 
-  SELECT max(id) FROM `quotation` INTO _id;
+  SELECT max(id) FROM `quote` INTO _id;
   IF skip_number(_id) THEN
-    DELETE FROM `quotation` WHERE id=_id;
-    REPLACE INTO quotation 
-      SELECT _id+1,
+    DELETE FROM `quote` WHERE id=_id;
+    SELECT _id+1 INTO _id;
+    REPLACE INTO quote (`id`,
+      `custId`,
+      `siteId`,
+      `workId`,
+      `serial`,
+      `version`,
+      `fiscalYear`,
+      `description`,
+      `ht`,
+      `tva`,
+      `ttc`,
+      `discount`,
+      `docId`,
+      `ctime`,
+      `status`
+    ) SELECT _id,
       _custId,
       _siteId,
       _workId,
-      quote_chrono(_workId),
+      quote_serial(_workId),
+      quote_version(_workId),
       fiscal_year(null),
       _description,
       _ht,
@@ -70,8 +101,7 @@ BEGIN
         0;
   END IF;
 
-
-  CALL seo_index(_description, 'quotation', JSON_OBJECT(
+  CALL seo_index(_description, 'quote', JSON_OBJECT(
     'id', _id,
     'table', 'note'
   ));

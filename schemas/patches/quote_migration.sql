@@ -1,0 +1,33 @@
+REPLACE INTO quote (`id`,
+    `custId`,
+    `siteId`,
+    `workId`,
+    `serial`,
+    `version`,
+    `fiscalYear`,
+    `description`,
+    `ht`,
+    `tva`,
+    `ttc`,
+    `discount`,
+    `docId`,
+    `ctime`,
+    `status`
+    )
+SELECT     
+    `id`,
+    `custId`,
+    `siteId`,
+    `workId`,
+    CAST(REGEXP_REPLACE(chrono,'^[0-9]{2,2}\.|[A-Z]{1,}$', '') AS INTEGER),
+    REGEXP_REPLACE(chrono,'^[0-9]{2,2}\.[0-9]+', ''),
+    `fiscalYear`,
+    `description`,
+    `ht`,
+    `tva`,
+    `ttc`,
+    `discount`,
+    `docId`,
+    `ctime`,
+    `status`
+    FROM quotation;

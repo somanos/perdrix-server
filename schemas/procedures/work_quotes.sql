@@ -1,9 +1,8 @@
 
 DELIMITER $
 
-DROP PROCEDURE IF EXISTS `work_quote`$
-DROP PROCEDURE IF EXISTS `work_quotations`$
-CREATE PROCEDURE `work_quotations`(
+DROP PROCEDURE IF EXISTS `work_quotes`$
+CREATE PROCEDURE `work_quotes`(
   IN _args JSON
 )
 BEGIN
@@ -39,7 +38,7 @@ BEGIN
     user_permission(_uid, m.id) privilege,
     _home_id home_id,
     _hub_id hub_id
-  FROM quotation q
+  FROM quote q
     LEFT JOIN media m ON m.file_path=concat('/devis/',fiscalYear,'/odt/dev', chrono, '.odt')
     WHERE q.workId=_workId
     ORDER BY q.ctime DESC

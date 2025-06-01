@@ -49,7 +49,7 @@ BEGIN
       'siteId', s.id,
       'id', s.id
     ) `site`
-  FROM quotation q
+  FROM quote q
     INNER JOIN work w ON w.id=q.workId
     INNER JOIN `site` s ON w.siteId=s.id
     LEFT JOIN `workType` t ON t.id=w.category

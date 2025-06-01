@@ -6,7 +6,7 @@ CREATE PROCEDURE `quote_remove`(
   IN _id INTEGER
 )
 BEGIN
-  DELETE FROM quotation WHERE id = _id;
+  DELETE FROM quote WHERE id = _id;
 END$
 
 

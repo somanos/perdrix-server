@@ -24,6 +24,12 @@
         "src": "read"
       }
     },
+    "orphanedNumbers": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
+    },
     "list": {
       "scope": "hub",
       "permission": {

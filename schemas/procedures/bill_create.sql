@@ -1,5 +1,3 @@
--- id   | billNumber | custId | siteId | workId | chrono  | category | ht     | tva   | ttc    | description | docId          | ctime      | status | d                   |
-
 DELIMITER $
 
 DROP PROCEDURE IF EXISTS `bill_create`$
@@ -11,6 +9,7 @@ BEGIN
   DECLARE _siteId INTEGER;
   DECLARE _workId INTEGER;
   DECLARE _id INTEGER;
+  DECLARE _billId INTEGER;
   DECLARE _ccode INTEGER;
   DECLARE _category VARCHAR(512) DEFAULT "Facture";
 
@@ -22,6 +21,7 @@ BEGIN
   DECLARE _chrono VARCHAR(200);
   DECLARE _site JSON;
 
+  SELECT IFNULL(JSON_VALUE(_args, "$.billId"), 0) INTO _billId;
   SELECT IFNULL(JSON_VALUE(_args, "$.custId"), 0) INTO _custId;
   SELECT IFNULL(JSON_VALUE(_args, "$.siteId"), 0) INTO _siteId;
   SELECT IFNULL(JSON_VALUE(_args, "$.workId"), 0) INTO _workId;
@@ -46,31 +46,26 @@ BEGIN
     SELECT IFNULL(JSON_VALUE(_site, "$.id"), 0) INTO _siteId;
   END IF;
 
-  INSERT INTO bill 
-    SELECT NULL,
-    _custId,
-    _siteId,
-    _workId,
-    bill_chrono(),
-    fiscal_year(null),
-    _ccode,
-    _ht,
-    _tva,      
-    _ttc,      
-    _description,
-    NULL,
-    UNIX_TIMESTAMP(),  
-    0;
-
-  SELECT max(id) FROM `bill` INTO _id;
-  IF skip_number(_id) THEN
-    DELETE FROM `bill` WHERE id=_id;
-    INSERT INTO bill 
-      SELECT _id+1,
+  IF _billId > 0  THEN
+    REPLACE INTO bill (`id`,
+      `custId`,
+      `siteId`,
+      `workId`,
+      `serial`,
+      `fiscalYear`,
+      `category`,
+      `ht`,
+      `tva`,
+      `ttc`,
+      `description`,
+      `docId`,
+      `ctime`,
+      `status`
+      ) SELECT _billId,
       _custId,
       _siteId,
       _workId,
-      bill_chrono(),
+      bill_serial(),
       fiscal_year(null),
       _ccode,
       _ht,
@@ -80,6 +75,70 @@ BEGIN
       NULL,
       UNIX_TIMESTAMP(),  
       0;
+    SELECT _billId INTO _id;
+  ELSE
+    INSERT INTO bill (`id`,
+      `custId`,
+      `siteId`,
+      `workId`,
+      `serial`,
+      `fiscalYear`,
+      `category`,
+      `ht`,
+      `tva`,
+      `ttc`,
+      `description`,
+      `docId`,
+      `ctime`,
+      `status`
+      ) SELECT NULL,
+      _custId,
+      _siteId,
+      _workId,
+      bill_serial(),
+      fiscal_year(null),
+      _ccode,
+      _ht,
+      _tva,      
+      _ttc,      
+      _description,
+      NULL,
+      UNIX_TIMESTAMP(),  
+      0;
+
+    SELECT max(id) FROM `bill` INTO _id;
+    IF skip_number(_id) THEN
+      DELETE FROM `bill` WHERE id=_id;
+      SELECT _id+1 INTO _id;
+      INSERT INTO bill (`id`,
+        `custId`,
+        `siteId`,
+        `workId`,
+        `serial`,
+        `fiscalYear`,
+        `category`,
+        `ht`,
+        `tva`,
+        `ttc`,
+        `description`,
+        `docId`,
+        `ctime`,
+        `status`
+        ) SELECT _id,
+        _custId,
+        _siteId,
+        _workId,
+        bill_serial(),
+        fiscal_year(null),
+        _ccode,
+        _ht,
+        _tva,      
+        _ttc,      
+        _description,
+        NULL,
+        UNIX_TIMESTAMP(),  
+        0;
+    END IF;
   END IF;
 
   CALL seo_index(_description, 'bill', JSON_OBJECT(

@@ -14,7 +14,7 @@ BEGIN
     q.id quoteId,
     t.tag `type`,
     (SELECT count(*) FROM bill WHERE workId=_workId) bill,
-    (SELECT count(*) FROM quotation WHERE workId=_workId) quote,
+    (SELECT count(*) FROM quote WHERE workId=_workId) quote,
     (SELECT count(*) FROM note WHERE workId=_workId) note,
     JSON_OBJECT(
       'countrycode', s.countrycode,
@@ -28,7 +28,7 @@ BEGIN
       'id', s.id
     ) `site`
   FROM work w
-    LEFT JOIN quotation q ON w.custId=q.custId AND w.id=q.workId
+    LEFT JOIN quote q ON w.custId=q.custId AND w.id=q.workId
     INNER JOIN `site` s ON s.custId=w.custId AND w.siteId=s.id
     INNER JOIN `workType` t ON t.id=w.category
     WHERE w.id=_workId

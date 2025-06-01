@@ -109,10 +109,10 @@ class Work extends Entity {
   /**
   * 
   */
-  async quotations() {
+  async quotes() {
     const workId = this.input.get('workId');
     const page = this.input.get(Attr.page) || 1;
-    let data = await this.db.await_proc('work_quotations', { workId, page, uid: this.uid });
+    let data = await this.db.await_proc('work_quotes', { workId, page, uid: this.uid });
     this.output.list(data);
   }
 

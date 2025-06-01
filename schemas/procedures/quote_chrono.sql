@@ -19,12 +19,12 @@ BEGIN
     ORDER BY ctime DESC LIMIT 1
     INTO _chrono;
     
+  SELECT DATE_FORMAT(now(), "%y") INTO _year;
+  SELECT DATE_FORMAT(now(), "%m") INTO _month;
+  IF _month >= 10 THEN
+    SELECT _year + 1 INTO _year;
+  END IF;
   IF _chrono IS NULL THEN 
-    SELECT DATE_FORMAT(now(), "%y") INTO _year;
-    SELECT DATE_FORMAT(now(), "%m") INTO _month;
-    IF _month >= 10 THEN
-      SELECT _year + 1 INTO _year;
-    END IF;
     SELECT REGEXP_REPLACE(chrono,'^[0-9]{2,2}\.|[A-Z]{1,1}$', '')
       FROM quotation WHERE chrono LIKE CONCAT(_year, '.', "%")
       ORDER BY ctime DESC LIMIT 1 INTO _number; 
@@ -34,7 +34,6 @@ BEGIN
     SELECT _number+1 INTO _number;
     SELECT IF(skip_number(_number), _number+1, _number) INTO _number;
   ELSE
-    SELECT SUBSTR(_chrono, 1, 2) INTO _year;
     SELECT REGEXP_REPLACE(_chrono,'^[0-9]{2,2}\.|[A-Z]{1,1}$', '') INTO _number;
   END IF;
 
@@ -57,6 +56,6 @@ BEGIN
   END WHILE;
   RETURN _chrono;
 END$
- 
+
 
 DELIMITER ;

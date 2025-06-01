@@ -34,7 +34,7 @@ BEGIN
     count INTEGER,
     PRIMARY KEY(workId)
   );
-  INSERT INTO _count_q SELECT workId, count(*) FROM quotation GROUP BY workId;
+  INSERT INTO _count_q SELECT workId, count(*) FROM quote GROUP BY workId;
 
   DROP TABLE IF EXISTS _count_n;
   CREATE TEMPORARY TABLE _count_n(

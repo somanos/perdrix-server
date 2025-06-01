@@ -16,7 +16,7 @@ BEGIN
   SELECT
     SUM(ttc) ttc,
     SUM(ht) ht
-  FROM quotation q
+  FROM quote q
     WHERE 
        IF(_custId IS NULL, 1, q.custId=_custId) AND
        IF(_siteId IS NULL, 1, q.siteId=_siteId) AND

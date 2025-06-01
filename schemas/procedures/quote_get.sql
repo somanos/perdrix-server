@@ -21,7 +21,7 @@ BEGIN
       'siteId', s.id,
       'id', s.id
     ) `site`
-    FROM `quotation` q
+    FROM `quote` q
       INNER JOIN `site` s ON s.id=q.siteId
       WHERE q.id = _id;
 END$

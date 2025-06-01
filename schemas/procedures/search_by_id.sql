@@ -32,7 +32,7 @@ BEGIN
     PRIMARY KEY (itemId, `type`)
   );
 
-  IF _tables IS NULL OR json_array_contains(_tables, "quotation") THEN
+  IF _tables IS NULL OR json_array_contains(_tables, "quote") THEN
     REPLACE INTO _view SELECT 
       q.id,
       'quote',
@@ -83,7 +83,7 @@ BEGIN
           'type', wt.tag
         )
       )
-      FROM `quotation` q
+      FROM `quote` q
         INNER JOIN customer c ON c.id=q.custId
         INNER JOIN `site` s ON s.id=q.siteId
         INNER JOIN `work` w ON w.id=q.workId

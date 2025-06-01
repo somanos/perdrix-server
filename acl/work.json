@@ -24,7 +24,7 @@
         "src": "read"
       }
     },
-    "quotations": {
+    "quotes": {
       "scope": "hub",
       "permission": {
         "src": "read"

@@ -56,22 +56,6 @@ class Quote extends Sales {
    */
   list() {
     return super.list('quote')
-    // const custId = this.input.get('custId');
-    // const siteId = this.input.get('siteId') || 0;
-    // const fiscalYear = this.input.get('fiscalYear');
-    // const page = this.input.get(Attr.page);
-    // let opt = { page };
-    // if (/[0-9]{4,4}/.test(fiscalYear)) {
-    //   opt.fiscalYear = fiscalYear;
-    // }
-    // if (custId) {
-    //   opt.custId = custId;
-    // }
-    // if (siteId) {
-    //   opt.siteId = siteId;
-    // }
-    // let data = await this.db.await_proc('quote_list', opt);
-    // this.output.list(data);
   }
 
   /**
@@ -79,21 +63,6 @@ class Quote extends Sales {
     */
   balance() {
     return super.balance('quote')
-    // const custId = this.input.get('custId') || 0;
-    // const siteId = this.input.get('siteId') || 0;
-    // const fiscalYear = this.input.get('fiscalYear');
-    // let opt = {}
-    // if (/[0-9]{4,4}/.test(fiscalYear)) {
-    //   opt.fiscalYear = fiscalYear;
-    // }
-    // if (custId) {
-    //   opt.custId = custId;
-    // }
-    // if (siteId) {
-    //   opt.siteId = siteId;
-    // }
-    // let data = await this.db.await_proc('quote_balance', opt);
-    // this.output.data(data);
   }
 
   /**
@@ -101,9 +70,6 @@ class Quote extends Sales {
   */
   update() {
     return super.update('quote')
-    // const args = this.input.get('args');
-    // let data = await this.db.await_proc('quote_update', args);
-    // this.output.data(data);
   }
 }
 
