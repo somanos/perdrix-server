@@ -1,4 +1,4 @@
-DROP TABLE tmp_bill IF EXISTS;
+DROP TABLE IF EXISTS tmp_bill;
 CREATE TABLE `tmp_bill` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `custId` int(10) unsigned DEFAULT NULL,
@@ -56,5 +56,35 @@ CREATE TABLE `bill_bak` LIKE bill;
 INSERT INTO bill_bak SELECT * FROM bill;
 DROP TABLE IF EXISTS bill;
 CREATE TABLE `bill` LIKE tmp_bill;
-INSERT INTO bill SELECT * FROM tmp_bill;
+REPLACE INTO bill (`id`,
+    `custId`,
+    `siteId`,
+    `workId`,
+    `serial`,
+    `fiscalYear`,
+    `category`,
+    `ht`,
+    `tva`,
+    `ttc`,
+    `description`,
+    `docId`,
+    `ctime`,
+    `status`
+    )
+SELECT     
+    `id`,
+    `custId`,
+    `siteId`,
+    `workId`,
+    CAST(REGEXP_REPLACE(chrono,'^[0-9]{2,}\.', '') AS INTEGER),
+    `fiscalYear`,
+    `category`,
+    `ht`,
+    `tva`,
+    `ttc`,
+    `description`,
+    `docId`,
+    `ctime`,
+    `status`
+    FROM tmp_bill;
 DROP TABLE IF EXISTS tmp_bill;
