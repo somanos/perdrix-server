@@ -16,7 +16,8 @@ BEGIN
   DECLARE _companycode INTEGER;
   DECLARE _streetcode INTEGER;
   DECLARE _ccode INTEGER;
-  DECLARE _gender VARCHAR(128) DEFAULT 0;
+  DECLARE _gcode INTEGER DEFAULT 0;
+  DECLARE _gender VARCHAR(128) DEFAULT "";
   DECLARE _lastname VARCHAR(512);
   DECLARE _firstname VARCHAR(512);
   DECLARE _postcode INTEGER;
@@ -36,7 +37,7 @@ BEGIN
   SELECT IFNULL(JSON_VALUE(_args, "$.category"), 0) INTO _category;
   SELECT IFNULL(JSON_VALUE(_args, "$.companyname"), "") INTO _companyname;
   SELECT IFNULL(JSON_VALUE(_args, "$.companyclass"), "") INTO _companyclass;
-  SELECT IFNULL(JSON_VALUE(_args, "$.gender"), 0) INTO _gender;
+  SELECT IFNULL(JSON_VALUE(_args, "$.gender"), "") INTO _gender;
   SELECT IFNULL(JSON_VALUE(_args, "$.lastname"), "") INTO _lastname;
   SELECT IFNULL(JSON_VALUE(_args, "$.firstname"), "") INTO _firstname;
   SELECT IFNULL(JSON_VALUE(_args, "$.postcode"), 99999) INTO _postcode;
@@ -48,6 +49,7 @@ BEGIN
 
 
   SELECT id FROM companyClass WHERE tag=_companyclass INTO _companycode;
+  SELECT id FROM gender WHERE longTag=_gender OR shortTag=_gender INTO _gcode;
 
   IF _companycode IS NULL THEN 
     INSERT INTO companyClass SELECT NULL, _companyclass;
@@ -73,7 +75,7 @@ BEGIN
       _category,
       _companycode,
       _companyname,
-      _gender,
+      _gcode,
       _lastname,
       _firstname,
       _location,
@@ -91,7 +93,7 @@ BEGIN
         _category,
         _companycode,
         _companyname,
-        _gender,
+        _gcode,
         _lastname,
         _firstname,
         _location,
