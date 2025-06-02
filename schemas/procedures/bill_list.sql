@@ -16,7 +16,7 @@ BEGIN
   DECLARE _custId INTEGER ;
   DECLARE _fiscalYear INTEGER ;
   DECLARE _siteId INTEGER ;
-  DECLARE _status JSON ;
+  DECLARE _status BOOLEAN ;
   DECLARE _words TEXT;
   DECLARE _i TINYINT(6) unsigned DEFAULT 0;
 
@@ -25,9 +25,10 @@ BEGIN
   SELECT IFNULL(JSON_VALUE(_args, "$.order"), 'asc') INTO _order;
   SELECT IFNULL(JSON_VALUE(_args, "$.page"), 1) INTO _page;
   SELECT IFNULL(JSON_VALUE(_args, "$.pagelength"), 45) INTO @rows_per_page;  
+  SELECT IFNULL(JSON_VALUE(_args, "$.fiscalYear"), 0) INTO _fiscalYear;
   SELECT JSON_VALUE(_args, "$.custId") INTO _custId;
   SELECT JSON_VALUE(_args, "$.siteId") INTO _siteId;
-  SELECT IFNULL(JSON_VALUE(_args, "$.fiscalYear"), 0) INTO _fiscalYear;
+  SELECT JSON_VALUE(_args, "$.status") INTO _status;
   CALL yp.pageToLimits(_page, _offset, _range);
 
   SELECT id FROM yp.entity WHERE db_name=database() INTO _hub_id;
@@ -56,7 +57,8 @@ BEGIN
     WHERE 
       IF(_custId IS NULL, 1, w.custId=_custId) AND 
       IF(_siteId IS NULL, 1, b.siteId=_siteId) AND
-      IF(_fiscalYear REGEXP "^ *([0-9]{4,4}) *$", fiscalYear=_fiscalYear, 1)
+      IF(_fiscalYear REGEXP "^ *([0-9]{4,4}) *$", fiscalYear=_fiscalYear, 1) AND
+      IF(_status IS NULL, 1, b.status=1)
     ORDER BY b.ctime DESC
     LIMIT _offset ,_range;
 END$

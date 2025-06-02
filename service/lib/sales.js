@@ -152,6 +152,7 @@ class Sales extends DrumeeMfs {
   async list(type) {
     const custId = this.input.get('custId');
     const siteId = this.input.get('siteId') || 0;
+    const status = this.input.get(Attr.status);
     const fiscalYear = this.input.get('fiscalYear');
     const page = this.input.get(Attr.page);
     let opt = { page };
@@ -161,9 +162,13 @@ class Sales extends DrumeeMfs {
     if (custId) {
       opt.custId = custId;
     }
+    if (status) {
+      opt.status = status;
+    }
     if (siteId) {
       opt.siteId = siteId;
     }
+    this.debug("AAAA:171", JSON.stringify(opt))
     let data = await this.db.await_proc(`${type}_list`, opt);
     this.output.list(data);
   }
@@ -174,6 +179,7 @@ class Sales extends DrumeeMfs {
   async balance(type) {
     const custId = this.input.get('custId') || 0;
     const siteId = this.input.get('siteId') || 0;
+    const status = this.input.get(Attr.status);
     const fiscalYear = this.input.get('fiscalYear');
     let opt = {}
     if (/[0-9]{4,4}/.test(fiscalYear)) {
@@ -181,6 +187,9 @@ class Sales extends DrumeeMfs {
     }
     if (custId) {
       opt.custId = custId;
+    }
+    if (status) {
+      opt.status = status;
     }
     if (siteId) {
       opt.siteId = siteId;

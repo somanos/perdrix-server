@@ -16,7 +16,6 @@ class Bill extends Sales {
     }
 
     let bill = await this.db.await_proc('bill_create', args);
-    this.debug("AAAA:19", bill, JSON.stringify(args))
     if (!bill || !bill.custId || !bill.chrono) {
       this.exception.server("QUOTE_FAILED");
       return
@@ -28,7 +27,6 @@ class Bill extends Sales {
       dest_dir,
       prefix: "fac"
     });
-    this.debug("AAAA:30", data)
     if (!data || !data.incoming_file) {
       this.exception.server("BILL_TEMPLATE_FAILED");
       return;
