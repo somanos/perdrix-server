@@ -9,6 +9,9 @@ BEGIN
   DECLARE _key TEXT;
   DECLARE _offset INTEGER UNSIGNED;
   DECLARE _range INTEGER UNSIGNED;
+  DECLARE _serial VARCHAR(20);
+  DECLARE _version VARCHAR(20);
+  DECLARE _fiscalYear INTEGER UNSIGNED;
   DECLARE _sort_by VARCHAR(20) DEFAULT 'lastname';
   DECLARE _hub_id VARCHAR(20);
   DECLARE _words TEXT;
@@ -20,6 +23,9 @@ BEGIN
   SELECT IFNULL(JSON_VALUE(_args, "$.order"), 'asc') INTO _order;
   SELECT IFNULL(JSON_VALUE(_args, "$.page"), 1) INTO _page;
   SELECT IFNULL(JSON_VALUE(_args, "$.words"), "") INTO _words;
+  SELECT JSON_VALUE(_args, "$.serial") INTO _serial;
+  SELECT JSON_VALUE(_args, "$.version") INTO _version;
+  SELECT JSON_VALUE(_args, "$.fiscalYear") INTO _fiscalYear;
 
   CALL yp.pageToLimits(_page, _offset, _range);
   SELECT id FROM yp.entity WHERE db_name=database() INTO _hub_id;
@@ -91,7 +97,9 @@ BEGIN
         LEFT JOIN media m ON m.file_path=concat('/devis/',fiscalYear,'/odt/dev', chrono, '.odt')
         LEFT JOIN gender g ON g.id=c.gender
         LEFT JOIN companyClass cc ON c.type = cc.id
-        WHERE c.id > 0 AND q.chrono REGEXP _words;
+        WHERE c.id > 0 AND q.serial REGEXP _serial AND 
+          substring(fiscalYear, 3)=_fiscalYear AND
+          IF(_version IS NULL, 1, `version`=_version);
   END IF;
 
   IF _tables IS NULL OR json_array_contains(_tables, "bill") THEN
@@ -152,7 +160,8 @@ BEGIN
         LEFT JOIN media m ON m.file_path=concat('/devis/',fiscalYear,'/odt/dev', chrono, '.odt')
         LEFT JOIN gender g ON g.id=c.gender
         LEFT JOIN companyClass cc ON c.type = cc.id
-        WHERE c.id > 0 AND b.chrono REGEXP _words;
+        WHERE c.id > 0 AND substring(fiscalYear, 3)=_fiscalYear AND
+          b.serial REGEXP _serial;
   END IF;
 
   IF _tables IS NULL OR json_array_contains(_tables, "site") THEN
@@ -249,7 +258,8 @@ BEGIN
       )
       FROM work w
         INNER JOIN workType wt ON w.category=wt.id
-        INNER JOIN customer c ON c.id=w.custId AND w.custId=q.custId
+        INNER JOIN `site` s ON s.id=w.siteId
+        INNER JOIN customer c ON c.id=w.custId
         LEFT JOIN gender g ON g.id=c.gender
         LEFT JOIN companyClass cc ON c.type = cc.id
         WHERE c.id > 0 AND w.id REGEXP _words;

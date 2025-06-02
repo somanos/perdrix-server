@@ -103,22 +103,39 @@ class PerdrixUtils extends Entity {
   async search() {
     let words = this.input.get('words') || 'nom';
     let tables = this.input.get('tables') || [];
-    let search_by_id = 0;    if (/^[0-9]+(\.)*[0-9]*.+$/i.test(words)) {
+    let search_by_id = 0;
+    if (/^[0-9]+(\.)*[0-9]*.+$/i.test(words)) {
       if (/^[0-9]{2,2}\.[0-9]{1,4}[A-Z]{1,1}$/i.test(words)) {
         tables = ['quote'];
       } else if (/^[0-9]{2,2}\..+$/i.test(words)) {
         tables = ['bill', 'quote'];
       } else {
-        tables = ['customer', 'poc', 'site', 'work', 'bill', 'quote'];
+        tables = ['customer', 'poc', 'site', 'work'];
+        words = words.replace(/\./g, '');
+        words = words + ".*$"
       }
-      words = words + ".*$"
       search_by_id = 1;
     }
     const page = this.input.get(Attr.page);
     if (!page) page = 1;
     let data;
     if (search_by_id) {
-      data = await this.db.await_proc('search_by_id', { words, page }, tables);
+      let [fiscalYear, serial = ""] = words.split('.');
+      this.debug("AAA:124 seo_search", { fiscalYear, serial })
+      let opt = { fiscalYear, words, page }
+      let a = serial.split('');
+      if (/[A-Z]{1,1}/i.test(a[a.length - 1])) {
+        opt.version = a.pop();
+        opt.serial = a.join('');
+      } else {
+        opt.serial = serial;
+      }
+      if (tables.includes('quote')) {
+        opt.serial = opt.serial.replace(/^[\^0]+/, '');
+        opt.serial = `^${opt.serial}`
+      }
+      this.debug("AAA:135 seo_search", JSON.stringify(opt), JSON.stringify(tables))
+      data = await this.db.await_proc('search_by_id', opt, tables);
       this.output.list(data);
       return
     }
@@ -128,6 +145,7 @@ class PerdrixUtils extends Entity {
     } else {
       if (!/^.+\*$/.test(words)) words = words + "*";
     }
+    this.debug("AAA:147 seo_search", JSON.stringify({ words, page }), JSON.stringify(tables))
     data = await this.db.await_proc('seo_search', { words, page }, tables);
     this.output.list(data);
   }
