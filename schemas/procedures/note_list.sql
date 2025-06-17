@@ -9,6 +9,7 @@ BEGIN
   DECLARE _range bigint;
   DECLARE _offset bigint;
   DECLARE _page INTEGER DEFAULT 1;
+  DECLARE _addressId INTEGER ;
   DECLARE _workId INTEGER ;
   DECLARE _order VARCHAR(20) DEFAULT 'desc';
 
@@ -17,10 +18,13 @@ BEGIN
   SELECT IFNULL(JSON_VALUE(_args, "$.pagelength"), 45) INTO @rows_per_page;
 
   SELECT JSON_VALUE(_args, "$.workId") INTO _workId;
+  SELECT JSON_VALUE(_args, "$.addressId") INTO _addressId;
+
   CALL yp.pageToLimits(_page, _offset, _range);
 
   SELECT
     n.id,
+    a.id addressId,
     n.custId,
     n.workId,
     n.siteId,
@@ -45,10 +49,13 @@ BEGIN
       'ctime', w.ctime
     ) `work`
   FROM note n
-    LEFT JOIN `site` s ON s.id=n.siteId
-    LEFT JOIN work w ON w.id=n.workId
-    INNER JOIN `workType` t ON t.id=w.category
-    WHERE n.workId = _workId 
+    INNER JOIN work w ON w.id=n.workId
+    INNER JOIN `site` s ON s.id=n.siteId
+    INNER JOIN `address` a ON s.addressId=a.id
+    LEFT JOIN `workType` t ON t.id=w.category
+    WHERE 
+      IF (_workId IS NULL, 1, n.workId=_workId) AND
+      IF (_addressId IS NULL, 1, a.id=_addressId) 
   ORDER BY 
     CASE WHEN LCASE(_order) = 'asc' THEN n.ctime END ASC,
     CASE WHEN LCASE(_order) = 'desc' THEN n.ctime END DESC

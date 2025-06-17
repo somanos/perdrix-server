@@ -1,0 +1,7 @@
+
+DELIMITER $
+
+DROP FUNCTION IF EXISTS `adress_get_label`$
+
+ 
+DELIMITER ;

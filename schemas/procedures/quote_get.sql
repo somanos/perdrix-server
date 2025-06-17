@@ -11,11 +11,11 @@ BEGIN
     q.id quoteId,
     JSON_OBJECT(
       'custId', s.custId,
-      'countrycode', s.countrycode,
-      'location', s.location,
-      'postcode', s.postcode,
-      'city', s.city,
-      'geometry', s.geometry,
+      'countrycode', a.countrycode,
+      'location', a.location,
+      'postcode', a.postcode,
+      'city', a.city,
+      'geometry', a.geometry,
       'ctime', s.ctime,
       'statut', s.statut,
       'siteId', s.id,
@@ -23,6 +23,7 @@ BEGIN
     ) `site`
     FROM `quote` q
       INNER JOIN `site` s ON s.id=q.siteId
+      INNER JOIN `address` a ON s.addressId=a.id
       WHERE q.id = _id;
 END$
 

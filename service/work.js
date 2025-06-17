@@ -37,17 +37,23 @@ class Work extends Entity {
   * 
   */
   async list() {
-    const custId = this.input.get('custId');
-    const siteId = this.input.get('siteId');
-    const filter = this.input.get('filter');
-    const status = this.input.get(Attr.status);
-    const page = this.input.get(Attr.page);
-    let opt = { custId, page, status };
-    if (filter) opt.filter = filter;
-    if (!nullValue(siteId)) {
-      opt.siteId = siteId;
-    }
-    let data = await this.db.await_proc('work_list', opt);
+    // const custId = this.input.get('custId');
+    // const siteId = this.input.get('siteId');
+    // const addressId = this.input.get('addressId');
+    // const filter = this.input.get('filter');
+    // const status = this.input.get(Attr.status);
+    // const page = this.input.get(Attr.page);
+    // let opt = { custId, page, status };
+    // if (filter) opt.filter = filter;
+    // if (!nullValue(siteId)) {
+    //   opt.siteId = siteId;
+    // }
+    // if (!nullValue(addressId)) {
+    //   opt.addressId = addressId;
+    // }
+    let args = this.input.get('args');
+    this.debug("AAA:54", JSON.stringify(args))
+    let data = await this.db.await_proc('work_list', args);
     this.output.list(data);
   }
 

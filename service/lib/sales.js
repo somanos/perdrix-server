@@ -150,26 +150,12 @@ class Sales extends DrumeeMfs {
   * 
   */
   async list(type) {
-    const custId = this.input.get('custId');
-    const siteId = this.input.get('siteId') || 0;
-    const status = this.input.get(Attr.status);
-    const fiscalYear = this.input.get('fiscalYear');
-    const page = this.input.get(Attr.page);
-    let opt = { page };
-    if (/[0-9]{4,4}/.test(fiscalYear)) {
-      opt.fiscalYear = fiscalYear;
+    let args = this.input.get('args');
+    if (args.fiscalYear && !/[0-9]{4,4}/.test(args.fiscalYear)) {
+      delete args.fiscalYear;
     }
-    if (custId) {
-      opt.custId = custId;
-    }
-    if (status) {
-      opt.status = status;
-    }
-    if (siteId) {
-      opt.siteId = siteId;
-    }
-    this.debug("AAAA:171", JSON.stringify(opt))
-    let data = await this.db.await_proc(`${type}_list`, opt);
+
+    let data = await this.db.await_proc(`${type}_list`, args);
     this.output.list(data);
   }
 
@@ -206,8 +192,6 @@ class Sales extends DrumeeMfs {
     let data = await this.db.await_proc(`${type}_update`, args);
     this.output.data(data);
   }
-
-
 }
 
 

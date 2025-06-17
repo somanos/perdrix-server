@@ -13,6 +13,7 @@ BEGIN
   DECLARE _hub_id VARCHAR(20);
 
   DECLARE _page INTEGER DEFAULT 1;
+  DECLARE _addressId INTEGER ;
   DECLARE _custId INTEGER ;
   DECLARE _siteId INTEGER ;
   DECLARE _filter JSON ;
@@ -29,12 +30,15 @@ BEGIN
   SELECT JSON_EXTRACT(_args, "$.filter") INTO _filter;
   SELECT JSON_VALUE(_args, "$.custId") INTO _custId;
   SELECT JSON_VALUE(_args, "$.siteId") INTO _siteId;
+  SELECT JSON_VALUE(_args, "$.addressId") INTO _addressId;
+
   SELECT id FROM yp.entity WHERE db_name=database() INTO _hub_id;
 
   CALL yp.pageToLimits(_page, _offset, _range);
 
   DROP TABLE IF EXISTS _view;
   CREATE TEMPORARY TABLE _view LIKE work;
+  ALTER TABLE _view ADD column addressId INTEGER;
   ALTER TABLE _view ADD column workId INTEGER;
   ALTER TABLE _view ADD column city VARCHAR(200);
   ALTER TABLE _view ADD column `type` VARCHAR(100);
@@ -85,6 +89,7 @@ BEGIN
 
   INSERT INTO _view SELECT
     w.*,
+    a.id addressId,
     w.id workId,
     s.city,
     t.tag `type`,
@@ -94,11 +99,11 @@ BEGIN
     IFNULL(cn.count, 0) note,
     JSON_OBJECT(
       'custId', w.custId,
-      'countrycode', s.countrycode,
-      'location', s.location,
-      'postcode', s.postcode,
-      'city', s.city,
-      'geometry', s.geometry,
+      'countrycode', a.countrycode,
+      'location', a.location,
+      'postcode', a.postcode,
+      'city', a.city,
+      'geometry', a.geometry,
       'ctime', s.ctime,
       'statut', s.statut,
       'siteId', s.id,
@@ -106,11 +111,16 @@ BEGIN
     ) `site`
   FROM work w
     INNER JOIN `site` s ON s.custId=w.custId AND w.siteId=s.id
+    INNER JOIN `address` a ON s.addressId=a.id
     LEFT JOIN `workType` t ON t.id=w.category
     LEFT JOIN _count_b cb ON cb.workId=w.id
     LEFT JOIN _count_q cq ON cq.workId=w.id
     LEFT JOIN _count_n cn ON cn.workId=w.id
-    WHERE w.custId=_custId AND IFNULL(_siteId, w.siteId)=w.siteId;
+    WHERE 
+    IF (_custId IS NULL, 1, w.custId=_custId) AND 
+    IF (_siteId IS NULL, 1, w.siteId=_siteId) AND 
+    IF (_addressId IS NULL, 1, a.id=_addressId);
+
   SET @stm = CONCAT("SELECT *, type workType FROM _view", " ", @stm, " ", "LIMIT ?, ?");
   PREPARE stmt FROM @stm;
   EXECUTE stmt USING _offset, _range;

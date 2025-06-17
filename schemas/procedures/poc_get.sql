@@ -21,16 +21,16 @@ BEGIN
     p.ctime,
     p.active,
     JSON_OBJECT(
-      'countrycode', s.countrycode,
-      'location', s.location,
-      'postcode', s.postcode,
-      'citycode', s.citycode,
-      'city', s.city,
-      'geometry', s.geometry,
-      'ctime', s.ctime
+      'countrycode', a.countrycode,
+      'location', a.location,
+      'postcode', a.postcode,
+      'city', a.city,
+      'geometry', a.geometry,
+      'ctime', a.ctime
     ) `site`
   FROM poc p
     INNER JOIN `site` s ON s.custId=p.custId AND p.siteId=s.id
+    INNER JOIN `address` a ON s.addressId=s.id AND sa.catetegory='site'
     LEFT JOIN gender g ON p.gender = g.id
     WHERE p.id = _id;
 END$

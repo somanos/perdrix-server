@@ -132,7 +132,7 @@ class DrumeeMfs extends Mfs {
       node = await this.db.await_proc("mfs_access_node", uid, dir.id);
     }
 
-    await this.changelog_write({ src: node });
+    await this.changelog_write({ src: node, event: "media.new" });
 
     if (/^(.|.+\/.+| )$/.test(dirname)) {
       this.exception.user("INVALID_FILENAME");

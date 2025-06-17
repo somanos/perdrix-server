@@ -13,6 +13,18 @@
       },
       "method": "customer_update"
     },
+    "get_pocs_by_addr": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
+    },
+    "create_poc": {
+      "scope": "hub",
+      "permission": {
+        "src": "write"
+      }
+    },
     "list": {
       "scope": "hub",
       "permission": {

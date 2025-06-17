@@ -18,9 +18,8 @@ class Poc extends Entity {
    * 
    */
   async list() {
-    const custId = this.input.get('custId');
-    const page = this.input.get(Attr.page) || 1;
-    let data = await this.db.await_proc('note_list', { custId, page });
+    let args = this.input.get('args')
+    let data = await this.db.await_proc('note_list', args);
     this.output.list(data);
   }
 

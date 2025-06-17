@@ -62,10 +62,10 @@ BEGIN
       JSON_OBJECT(
         'id', s.id,
         'siteId', s.id,
-        'location', s.location,
-        'geometry', s.geometry,
-        'city', s.city,
-        'postcode', s.postcode
+        'location', a.location,
+        'geometry', a.geometry,
+        'city', a.city,
+        'postcode', a.postcode
       ),
       JSON_ARRAY(
         JSON_OBJECT(
@@ -73,16 +73,17 @@ BEGIN
           'custName', normalize_name(c.category, c.company, c.lastname, c.firstname),
           'companyclass', cc.tag,
           'gender', g.shortTag,
-          'location', c.location,
-          'city', c.city,
-          'geometry', c.geometry,
-          'postcode', c.postcode
+          'location', a.location,
+          'city', a.city,
+          'geometry', a.geometry,
+          'postcode', a.postcode
         )
       )
       FROM `site` s 
         INNER JOIN seo_object o USING(id) 
         INNER JOIN customer c ON c.id=s.custId AND s.id=o.id
         INNER JOIN _results r USING(ref_id) 
+        INNER JOIN `address` a ON s.addressId=a.id
         LEFT JOIN gender g ON g.id=c.gender
         LEFT JOIN companyClass cc ON c.type = cc.id
         WHERE o.table = 'site';
@@ -100,15 +101,16 @@ BEGIN
         'custName', normalize_name(c.category, c.company, c.lastname, c.firstname),
         'companyclass', cc.tag,
         'gender', g.shortTag,
-        'location', c.location,
-        'city', c.city,
-        'geometry', c.geometry,
-        'postcode', c.postcode
+        'location', a.location,
+        'city', a.city,
+        'geometry', a.geometry,
+        'postcode', a.postcode
       ),
       JSON_ARRAY()
       FROM customer c 
         INNER JOIN seo_object o USING(id) 
         INNER JOIN _results r USING(ref_id) 
+        INNER JOIN `address` a ON c.addressId=a.id
         LEFT JOIN companyClass cc ON c.type = cc.id
         LEFT JOIN gender g ON g.id=c.gender
         WHERE o.table = 'customer';
@@ -162,19 +164,19 @@ BEGIN
           'gender', g.shortTag,
           'companyclass', cc.tag,
           'custName', normalize_name(c.category, c.company, c.lastname, c.firstname),
-          'location', c.location,
-          'site', c.location,
-          'geometry', c.geometry,
-          'city', c.city,
-          'postcode', c.postcode
+          'location', a.location,
+          'site', a.location,
+          'geometry', a.geometry,
+          'city', a.city,
+          'postcode', a.postcode
         ),
         JSON_OBJECT(
           'id', s.id,
           'siteId', s.id,
-          'location', s.location,
-          'geometry', s.geometry,
-          'city', s.city,
-          'postcode', s.postcode
+          'location', a.location,
+          'geometry', a.geometry,
+          'city', a.city,
+          'postcode', a.postcode
         )
       )
       FROM work w
@@ -183,6 +185,7 @@ BEGIN
         INNER JOIN `site` s ON w.siteId=s.id AND w.custId=s.custId
         INNER JOIN workType wt ON w.category=wt.id
         INNER JOIN customer c ON c.id=w.custId
+        INNER JOIN `address` a ON s.addressId=a.id
         LEFT JOIN gender g ON g.id=c.gender
         LEFT JOIN companyClass cc ON c.type = cc.id
         WHERE o.table = 'work';

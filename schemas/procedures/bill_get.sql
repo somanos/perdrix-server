@@ -11,18 +11,19 @@ BEGIN
     b.id billId,
     JSON_OBJECT(
       'custId', s.custId,
-      'countrycode', s.countrycode,
-      'location', s.location,
-      'postcode', s.postcode,
-      'city', s.city,
-      'geometry', s.geometry,
-      'ctime', s.ctime,
+      'countrycode', a.countrycode,
+      'location', a.location,
+      'postcode', a.postcode,
+      'city', a.city,
+      'geometry', a.geometry,
+      'ctime', a.ctime,
       'statut', s.statut,
       'siteId', s.id,
       'id', s.id
     ) `site`
     FROM bill b
       INNER JOIN `site` s ON s.id=b.siteId
+      INNER JOIN `address` a ON s.addressId=a.id
       WHERE b.id = _id;
 END$
 

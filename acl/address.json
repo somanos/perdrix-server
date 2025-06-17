@@ -1,0 +1,13 @@
+{
+  "services": {
+    "list": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
+    }
+ },
+  "modules": {
+    "private": "service/address"
+  }
+}

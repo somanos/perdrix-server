@@ -1,0 +1,19 @@
+{
+  "services": {
+    "create": {
+      "scope": "hub",
+      "permission": {
+        "src": "write"
+      }
+    },
+    "list": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
+    }
+ },
+  "modules": {
+    "private": "service/quote"
+  }
+}

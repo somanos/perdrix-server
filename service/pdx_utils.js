@@ -59,6 +59,9 @@ class PerdrixUtils extends Entity {
       data.pocRoles = await this.db.await_query(
         'SELECT DISTINCT role label, role FROM poc'
       );
+      data.customerPocRoles = await this.db.await_query(
+        'SELECT DISTINCT role label, role FROM customerPoc'
+      );
       data.privilege = privilege;
     }
     this.output.data(data);

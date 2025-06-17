@@ -16,6 +16,15 @@ class Poc extends Entity {
   /**
    * 
    */
+  async create_poc() {
+    let args = this.input.get('args')
+    let data = await this.db.await_proc('costumer_poc_create', args);
+    this.output.data(data);
+  }
+
+  /**
+   * 
+   */
   async list() {
     const custId = this.input.get('custId');
     const siteId = this.input.get('siteId');

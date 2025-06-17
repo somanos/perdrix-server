@@ -24,15 +24,15 @@ BEGIN
   CALL yp.pageToLimits(_page, _offset, _range);
 
   SELECT
-    s.countrycode,
-    s.location,
-    s.postcode,
-    s.city,
-    s.lat,
-    s.lon,
+    a.countrycode,
+    a.location,
+    a.postcode,
+    a.city,
+    a.geometry,
     s.ctime,
     s.statut
   FROM `site` s
+    INNER JOIN `address` a ON s.addressId=a.id
     WHERE s.custId = _custId
     LIMIT _offset ,_range;
 END$
