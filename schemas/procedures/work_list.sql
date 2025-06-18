@@ -47,6 +47,7 @@ BEGIN
   ALTER TABLE _view ADD column `quote` BIGINT;
   ALTER TABLE _view ADD column `note` BIGINT;
   ALTER TABLE _view ADD column `site` JSON;
+  ALTER TABLE _view ADD column `customer` JSON;
   SET @stm = "ORDER BY";
   IF JSON_TYPE(_filter) = 'ARRAY' AND JSON_LENGTH(_filter)>0 THEN 
     WHILE _i < JSON_LENGTH(_filter) DO 
@@ -108,9 +109,20 @@ BEGIN
       'statut', s.statut,
       'siteId', s.id,
       'id', s.id
-    ) `site`
+    ) `site`,
+    JSON_OBJECT(
+      'custId', w.custId,
+      'custName', normalize_name(c.category, c.company, c.lastname, c.firstname),
+      'countrycode', c.countrycode,
+      'location', ca.location,
+      'postcode', ca.postcode,
+      'city', ca.city,
+      'geometry', ca.geometry
+    ) `customer`
   FROM work w
     INNER JOIN `site` s ON s.custId=w.custId AND w.siteId=s.id
+    INNER JOIN `customer` c ON c.id=w.custId 
+    INNER JOIN `address` ca ON c.addressId=ca.id
     INNER JOIN `address` a ON s.addressId=a.id
     LEFT JOIN `workType` t ON t.id=w.category
     LEFT JOIN _count_b cb ON cb.workId=w.id

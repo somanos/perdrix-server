@@ -30,4 +30,4 @@ SELECT
     `docId`,
     `ctime`,
     `status`
-    FROM quotation;
+    FROM quotation;ali  

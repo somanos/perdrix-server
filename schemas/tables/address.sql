@@ -1,24 +1,7 @@
--- DROP TABLE IF EXISTS address;
-
--- CREATE TABLE
---   address (
---     `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
---     `category` enum('customer','site') DEFAULT NULL,
---     `location` JSON,
---     `postcode` varchar(200) DEFAULT NULL,
---     `city` text DEFAULT NULL,
---     `countrycode` int(10) unsigned DEFAULT NULL,
---     `geometry` JSON,
---     `ctime` int(11) unsigned DEFAULT NULL,
---     PRIMARY KEY (`id`),
---     UNIQUE KEY `loc` (`category`,`location`,`postcode`,`countrycode`) USING HASH
--- );
-
-DROP TABLE IF EXISTS tmp_address;
+DROP TABLE IF EXISTS address;
 CREATE TABLE
-  tmp_address (
+  address (
     `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-    `category` enum('customer','site') DEFAULT NULL,    
     `housenumber` varchar(10) DEFAULT NULL,
     `streettype` varchar(50) DEFAULT NULL,
     `streetname` varchar(200) DEFAULT NULL,
@@ -41,5 +24,5 @@ CREATE TABLE
     `geometry` JSON,
     `ctime` int(11) unsigned DEFAULT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `loc` (`category`,`location`,`postcode`,`countrycode`) USING HASH
+    UNIQUE KEY `loc` (`location`,`postcode`,`countrycode`) USING HASH
 );

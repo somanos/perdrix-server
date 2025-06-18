@@ -26,14 +26,15 @@ class Poc extends Entity {
    * 
    */
   async list() {
-    const custId = this.input.get('custId');
-    const siteId = this.input.get('siteId');
-    const page = this.input.get(Attr.page) || 1;
-    const filter = this.input.get('filter');
-    let opt = { custId, page };
-    if (filter) opt.filter = filter;
-    this.debug("AAA:26 list", JSON.stringify(opt))
-    let data = await this.db.await_proc('poc_list', opt);
+    // const custId = this.input.get('custId');
+    // const siteId = this.input.get('siteId');
+    // const page = this.input.get(Attr.page) || 1;
+    // const filter = this.input.get('filter');
+    // let opt = { custId, page };
+    // if (filter) opt.filter = filter;
+    let args = this.input.get('args')
+    this.debug("AAA:26 list", JSON.stringify(args))
+    let data = await this.db.await_proc('poc_list', args);
     this.output.list(data);
   }
 
