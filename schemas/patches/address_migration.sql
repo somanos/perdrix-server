@@ -26,7 +26,7 @@ CREATE TABLE
     PRIMARY KEY (`id`),
     UNIQUE KEY `loc` (`location`,`postcode`,`countrycode`) USING HASH
 );
-insert ignore into address 
+INSERT IGNORE INTO address 
     (
     `housenumber`,
     `streettype`,
@@ -40,7 +40,7 @@ insert ignore into address
     `geometry`,
     `ctime`
     )
-    select
+    SELECT
     IFNULL(JSON_VALUE(location, "$[0]"), ""), 
     IFNULL(JSON_VALUE(location, "$[1]"), ""), 
     IFNULL(JSON_VALUE(location, "$[2]"), ""), 
@@ -52,9 +52,9 @@ insert ignore into address
     countrycode, 
     geometry, 
     ctime 
-from site;
+FROM site;
 
-insert ignore into address 
+INSERT IGNORE INTO address 
     (
     `housenumber`,
     `streettype`,
@@ -82,7 +82,7 @@ insert ignore into address
     ctime 
 from customer;
 
-update customer set location = JSON_ARRAY(
+UPDATE customer set location = JSON_ARRAY(
     IFNULL(JSON_VALUE(location, "$[0]"), ""), 
     IFNULL(JSON_VALUE(location, "$[1]"), ""), 
     IFNULL(JSON_VALUE(location, "$[2]"), ""), 
@@ -91,7 +91,7 @@ update customer set location = JSON_ARRAY(
     IFNULL(JSON_VALUE(location, "$[5]"), "") 
 );
 
-update site set location = JSON_ARRAY(
+UPDATE site set location = JSON_ARRAY(
     IFNULL(JSON_VALUE(location, "$[0]"), ""), 
     IFNULL(JSON_VALUE(location, "$[1]"), ""), 
     IFNULL(JSON_VALUE(location, "$[2]"), ""), 
@@ -100,9 +100,8 @@ update site set location = JSON_ARRAY(
     IFNULL(JSON_VALUE(location, "$[5]"), "") 
 );
 
-
-update customer c inner join address a on c.location=a.location and c.postcode=a.postcode
+UPDATE customer c INNER JOIN address a ON c.location=a.location AND c.postcode=a.postcode
     set c.addressId=a.id;
 
-update site c inner join address a on c.location=a.location and c.postcode=a.postcode 
+UPDATE site c INNER JOIN address a ON c.location=a.location AND c.postcode=a.postcode 
     set c.addressId=a.id;

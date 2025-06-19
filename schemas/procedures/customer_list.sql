@@ -35,6 +35,10 @@ BEGIN
     a.location,
     a.geometry,
     a.streetname street,
+    a.housenumber,
+    a.streettype,
+    a.streetname,
+    a.additional,
     a.city,
     a.postcode
   FROM customer c

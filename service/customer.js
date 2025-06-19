@@ -9,10 +9,6 @@ class Customer extends Entity {
    * 
    */
   async list() {
-    // const sort_by = this.input.get(Attr.sort_by) || 'nom';
-    // const order = this.input.get(Attr.order) || 'asc';
-    // const page = this.input.get(Attr.page);
-    // let words = this.input.get('words') || '^.*$';
     let args = this.input.get('args');
     this.debug('AAA:49', JSON.stringify(args));
     let data = await this.db.await_proc('customer_list', args);
@@ -27,6 +23,7 @@ class Customer extends Entity {
     let args = this.input.get('args')
     this.debug("AAA:26", JSON.stringify(args))
     let data = await this.db.await_proc('customer_create', args);
+    this.debug("AAA:26", data)
     this.output.data(data);
   }
 

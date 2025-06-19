@@ -15,6 +15,7 @@ BEGIN
   DECLARE _companyclass VARCHAR(128) DEFAULT "";
   DECLARE _companycode INTEGER;
   DECLARE _streetcode INTEGER;
+  DECLARE _addressId INTEGER;
   DECLARE _ccode INTEGER;
   DECLARE _gcode INTEGER DEFAULT 0;
   DECLARE _gender VARCHAR(128) DEFAULT "";
@@ -45,6 +46,8 @@ BEGIN
   SELECT IFNULL(JSON_VALUE(_args, "$.city"), "") INTO _city;
   SELECT IFNULL(JSON_VALUE(_args, "$.id"), 0) INTO _id;
   SELECT IFNULL(JSON_VALUE(_args, "$.countrycode"), 'France') INTO  _countrycode;
+
+  SELECT JSON_VALUE(_args, "$.addressId") INTO  _addressId;
   SELECT JSON_EXTRACT(_args, "$.geometry") INTO _geometry;
 
 
@@ -64,11 +67,40 @@ BEGIN
   END IF;
 
   SELECT JSON_ARRAY(
-    _housenumber, _streettype, _streetname, _additional
+    _housenumber, _streettype, _streetname, _additional, "", ""
   ) INTO _location;
 
   SELECT id FROM country WHERE code=_countrycode INTO _ccode;
 
+  IF _addressId IS NULL THEN
+    SELECT address_get_id(_location, _postcode, _ccode) INTO _addressId;
+  END IF;
+
+  IF _addressId IS NULL THEN
+    REPLACE INTO `address` 
+      (
+      `housenumber`,
+      `streettype`,
+      `streetname`,
+      `additional`,
+      `postcode`,
+      `city`,
+      `countrycode`,
+      `geometry`,
+      `ctime`
+      )
+    SELECT 
+      _housenumber,
+      _streettype,
+      _streetname,
+      _additional,
+      _postcode,
+      _city,
+      _ccode,
+      _geometry,
+      UNIX_TIMESTAMP();
+    SELECT max(id) FROM `address` INTO _addressId;
+  END IF;
   IF _id IS NULL OR _id=0 THEN 
     INSERT INTO customer 
       SELECT NULL,
@@ -78,6 +110,7 @@ BEGIN
       _gcode,
       _lastname,
       _firstname,
+      _addressId,
       _location,
       _postcode,
       _citycode,
@@ -96,6 +129,7 @@ BEGIN
         _gcode,
         _lastname,
         _firstname,
+        _addressId,
         _location,
         _postcode,
         _citycode,
@@ -114,6 +148,7 @@ BEGIN
       _gender,
       _lastname,
       _firstname,
+      _addressId,
       _location,
       _postcode,
       _citycode,

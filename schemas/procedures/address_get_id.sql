@@ -11,8 +11,16 @@ CREATE FUNCTION `address_get_id`(
 RETURNS INTEGER DETERMINISTIC
 BEGIN
   DECLARE _id INTEGER;
-  SELECT id FROM address 
-    WHERE postcode=_postcode AND location=_location AND countrycode=_countrycode INTO _id;
+  SELECT id FROM address WHERE 
+    postcode=_postcode AND 
+    countrycode=_countrycode AND 
+    JSON_VALUE(_location, "$[0]")=housenumber AND
+    JSON_VALUE(_location, "$[1]")=streettype AND
+    JSON_VALUE(_location, "$[2]")=streetname AND
+    JSON_VALUE(_location, CONCAT("$[3]"))=additional AND
+    JSON_VALUE(_location, CONCAT("$[4]"))=floor AND
+    JSON_VALUE(_location, CONCAT("$[5]"))=roomnumber
+    INTO _id;
   RETURN _id;
 END$
  

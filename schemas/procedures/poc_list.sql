@@ -21,27 +21,44 @@ BEGIN
   SELECT JSON_VALUE(_args, "$.addressId") INTO _addressId;
 
   CALL yp.pageToLimits(_page, _offset, _range);
-
+  DROP TABLE IF EXISTS _view;
+  CREATE TEMPORARY TABLE _view AS
   SELECT
     p.id,
-    m.addressId,
-    p.category,
+    'customer' category,
+    c.addressId,
     p.role,
     g.shortTag gender,
     p.lastname,
     p.firstname,
     p.phones,
-    p.ctime workType,
     _page `page`
-  FROM poc p
-    INNER JOIN poc_map m ON p.id=m.pocId
+  FROM customerPoc p 
+    INNER JOIN customer c ON c.id=custId
     INNER JOIN gender g ON p.gender=g.id 
     WHERE 
-      IF (_lastname IS NULL, 1, lastname REGEXP _lastname) AND
-      IF (_addressId IS NULL, 1, m.addressId=_addressId) 
-  ORDER BY 
-    CASE WHEN LCASE(_order) = 'asc' THEN p.ctime END ASC,
-    CASE WHEN LCASE(_order) = 'desc' THEN p.ctime END DESC
+      IF (_lastname IS NULL, 1, p.lastname REGEXP _lastname) AND
+      IF (_addressId IS NULL, 1, c.addressId=_addressId);
+  INSERT INTO _view SELECT
+    p.id,
+    'site' category,
+    s.addressId,
+    p.role,
+    g.shortTag gender,
+    p.lastname,
+    p.firstname,
+    p.phones,
+    _page `page`
+  FROM sitePoc p 
+    INNER JOIN site s ON s.id=p.siteId
+    INNER JOIN gender g ON p.gender=g.id 
+    WHERE 
+      IF (_lastname IS NULL, 1, p.lastname REGEXP _lastname) AND
+      IF (_addressId IS NULL, 1, s.addressId=_addressId);
+
+  SELECT * FROM _view ORDER BY
+    CASE WHEN LCASE(_order) = 'asc' THEN lastname END ASC,
+    CASE WHEN LCASE(_order) = 'desc' THEN lastname END DESC
     LIMIT _offset ,_range;
 END$
 
