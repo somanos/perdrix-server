@@ -36,7 +36,7 @@
         "src": "write"
       }
     },
-    "add_poc": {
+    "create_poc": {
       "scope": "hub",
       "permission": {
         "src": "write"

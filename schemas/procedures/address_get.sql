@@ -1,0 +1,12 @@
+
+DELIMITER $
+
+DROP PROCEDURE IF EXISTS `address_get`$
+CREATE PROCEDURE `address_get`(
+  IN _id INTEGER
+)
+BEGIN
+  SELECT * FROM address WHERE id=_id;
+END$
+ 
+DELIMITER ;

@@ -46,18 +46,18 @@ function createTable(colunms, src, dest) {
  * 
  */
 function parseTable(row, sql, types) {
-  let orig = {...row}
+  let orig = { ...row }
   for (let i = 0; i < types.length; i++) {
     sql = `${sql} ?,`;
     if (/^int/.test(types[i])) {
       if (/\(11\)/.test(types[i])) {
         let t = row[i] || '2000-01-01';
-        if(/[0-9]{4,4}\-[0-9]{2,2}\-[0-9]{2,2}/.test(t)){
+        if (/[0-9]{4,4}\-[0-9]{2,2}\-[0-9]{2,2}/.test(t)) {
           row[i] = new Date(t).getTime() / 1000;
-        }else{
+        } else {
           row[i] = new Date('2000-01-01').getTime() / 1000;
         }
-        if(row[i]<0){
+        if (row[i] < 0) {
           row[i] = 0;
         }
       } else {
@@ -85,7 +85,7 @@ function parseTable(row, sql, types) {
  * 
  * @returns 
  */
-async function inject(src, dest) {
+async function inject(src, skip = []) {
   let re = new RegExp(`${extname(src)}$`)
   let name = basename(src).replace(re, '')
   console.log(`Reading data from ${src}`, name)
@@ -94,11 +94,12 @@ async function inject(src, dest) {
   let types = [];
   let sql = `REPLACE INTO ${name} (`;
   for (let c of table) {
+    if (skip.includes(c.Field)) continue;
     sql = `${sql} ${c.Field}, `;
     fields.push(c.Field);
     types.push(c.Type);
   }
-  console.log({fields, types})
+  console.log({ fields, types })
   sql = sql.replace(/\, *$/, ') VALUES(')
   let stm = [];
   try {

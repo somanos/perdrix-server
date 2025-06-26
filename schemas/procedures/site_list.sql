@@ -36,29 +36,44 @@ BEGIN
     SELECT CONCAT(@stm, " ", "city asc, street asc, housenumber desc") INTO @stm;
   END IF;
   DROP TABLE IF EXISTS `_site`;
-  CREATE TEMPORARY TABLE `_site` (
-    `id` int(10) unsigned,
-    `location` JSON,
-    `page` int(11) unsigned DEFAULT 1,
-    `street` varchar(200) DEFAULT "",
-    `housenumber` INTEGER DEFAULT NULL,
-    PRIMARY KEY (`id`)
-  );
 
-  INSERT INTO _site SELECT 
-    `id`,
-    `location`,
-     @_page,
-    REGEXP_REPLACE(JSON_VALUE(location, "$[2]"), "^(de +la +|des +|de +l\'|du +|la +|le +|de +)", ""),
-    CAST(REGEXP_REPLACE(IF(JSON_VALUE(location, "$[0]")="", 0, JSON_VALUE(location, "$[0]")), " *([0-9]+).*$", "\\1")  AS INTEGER)
-  FROM `site` WHERE custId=_custId;
+  CREATE TEMPORARY TABLE _site AS SELECT 
+    @_page page,
+    s.id,
+    s.custId,
+    a.id addressId,
+    a.location,
+    a.housenumber,
+    a.streettype,
+    a.streetname,
+    a.streetname street,
+    a.city,
+    a.postcode,
+    a.additional,
+    JSON_OBJECT(
+      'id', c.id,
+      'custId', c.id,
+      'gender', g.shortTag,
+      'companyclass', cc.tag,
+      'custName', normalize_name(c.category, c.company, c.lastname, c.firstname),
+      'location', ca.location,
+      'geometry', ca.geometry,
+      'city', ca.city,
+      'postcode', ca.postcode
+    ) customer
+  FROM site s
+    INNER JOIN customer c ON c.id=s.custId
+    INNER JOIN `address` a ON s.addressId=a.id
+    INNER JOIN `address` ca ON c.addressId=ca.id
+    LEFT JOIN gender g ON g.id=c.gender
+    LEFT JOIN companyClass cc ON c.type = cc.id    
+  WHERE IF(_custId IS NULL, 1, s.custId=_custId);
 
-  SET @stm = CONCAT(
-    'SELECT s.*, page FROM site s INNER JOIN _site USING(id) WHERE custId=? ',
-    @stm, " ", "LIMIT ?, ?"
-  );
+  ALTER TABLE _site MODIFY customer JSON;
+
+  SET @stm = CONCAT('SELECT * FROM _site ', @stm, " ", "LIMIT ?, ?");
   PREPARE stmt FROM @stm;
-  EXECUTE stmt USING _custId, _offset, _range;
+  EXECUTE stmt USING _offset, _range;
   DEALLOCATE PREPARE stmt;
 
 END$

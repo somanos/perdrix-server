@@ -1,18 +1,13 @@
 
 const { Mariadb } = require('@drumee/server-essentials');
 const { exit, env } = process;
-const Perdrix = new Mariadb({ name: 'perdrix', user: 'root' });
+const args = require("./args");
+if(!args.db){
+  console.error("Require db nqme")
+  exit(1)
+}
+const Perdrix = new Mariadb({ name: args.db, user: 'root' });
 const { isArray } = require('lodash');
-
-const {
-  writeSync,
-  openSync,
-  closeSync,
-  existsSync,
-  createReadStream
-} = require('fs');
-const { createInterface } = require("readline");
-const events = require("events");
 
 
 /**
@@ -32,15 +27,15 @@ async function populate_customer() {
     if (custName) {
       await Perdrix.await_proc(`seo_index`, custName, 'custName', reference);
     }
-    if (row.city) {
-      await Perdrix.await_proc(`seo_index`, row.city, 'city', reference);
-    }
-    if (row.location) {
-      let streetName = row.location[2];
-      if (streetName) {
-        await Perdrix.await_proc(`seo_index`, streetName, 'streetName', reference);
-      }
-    }
+    // if (row.city) {
+    //   await Perdrix.await_proc(`seo_index`, row.city, 'city', reference);
+    // }
+    // if (row.location) {
+    //   let streetName = row.location[2];
+    //   if (streetName) {
+    //     await Perdrix.await_proc(`seo_index`, streetName, 'streetName', reference);
+    //   }
+    // }
   }
 }
 
@@ -66,13 +61,35 @@ async function populate_site() {
     }
   }
 }
+/**
+ * 
+ * @returns 
+ */
+async function populate_address() {
+  let rows = await Perdrix.await_query(`SELECT * FROM address`);
+  for (let row of rows) {
+    let { id } = row;
+    let reference = {
+      id, table: 'address',
+    }
+    if (row.location) {
+      let streetName = row.location.join(' ');
+      if (row.streetname) {
+        await Perdrix.await_proc(`seo_index`, streetName, 'streetName', reference);
+      }
+    }
+    if (row.city) {
+      await Perdrix.await_proc(`seo_index`, row.city, 'city', reference);
+    }
+  }
+}
 
 /**
  * 
  * @returns 
  */
-async function populate_poc() {
-  let rows = await Perdrix.await_query(`SELECT * FROM poc`);
+async function populate_poc(table) {
+  let rows = await Perdrix.await_query(`SELECT * FROM ${table}`);
   for (let row of rows) {
     let { id } = row;
     let reference = {
@@ -127,8 +144,9 @@ async function populate_work() {
 async function populate() {
 
   await populate_customer();
-  await populate_site();
-  await populate_poc();
+  await populate_address();
+  await populate_poc("customerPoc");
+  await populate_poc("sitePoc");
   await populate_work();
 
 }

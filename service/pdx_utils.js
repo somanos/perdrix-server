@@ -73,8 +73,7 @@ class PerdrixUtils extends Entity {
   async get_geoloc() {
     let l = this.input.get(Attr.location) || [];
     let postcode = this.input.get('postcode');
-    let id = this.input.get(Attr.id);
-    let type = this.input.get(Attr.type);
+
     if (!l.length || !postcode || postcode.length < 5) {
       return this.output.data({});
     }
@@ -85,13 +84,19 @@ class PerdrixUtils extends Entity {
     words = words.replace(/ +/g, '+');
     let api_endpoint = Cache.getSysConf('address_api_endpoint');
     let url = api_endpoint.format(words) + `&postcode=${postcode}`;
-    this.debug("AAA:54", { words, type, id, url })
     Network.request(url).then(async (data) => {
       let { features } = data || {};
       let res = features[0];
       if (res && res.geometry) {
-        await this.db.await_proc('update_geo', id, type, res.geometry)
+        let addressId = this.input.get("addressId");
+        if (addressId) {
+          let { geometry } = await this.db.await_proc("address_get", addressId)
+          if (!geometry || geometry.type) {
+            await this.db.await_proc('update_geo', addressId, res.geometry)
+          }
+        }
       }
+      this.debug("AAA:100", res)
       this.output.data(res);
     }).catch((e) => {
       this.warn("Failed to get data from ", { words, url }, e)
@@ -106,7 +111,19 @@ class PerdrixUtils extends Entity {
   async search() {
     let words = this.input.get('words') || 'nom';
     let tables = this.input.get('tables') || [];
+    const page = this.input.get(Attr.page);
+    if (!page) page = 1;
     let search_by_id = 0;
+    let data;
+    let opt;
+
+    if (/^[0-9]+([ ,])+[A-Z]+.+$/i.test(words)) {
+      opt = { words, page }
+      data = await this.db.await_proc('search_by_address', opt);
+      this.output.list(data);
+      return
+    }
+
     if (/^[0-9]+(\.)*[0-9]*.+$/i.test(words)) {
       if (/^[0-9]{2,2}\.[0-9]{1,4}[A-Z]{1,1}$/i.test(words)) {
         tables = ['quote'];
@@ -119,13 +136,10 @@ class PerdrixUtils extends Entity {
       }
       search_by_id = 1;
     }
-    const page = this.input.get(Attr.page);
-    if (!page) page = 1;
-    let data;
     if (search_by_id) {
       let [fiscalYear, serial = ""] = words.split('.');
       this.debug("AAA:124 seo_search", { fiscalYear, serial })
-      let opt = { fiscalYear, words, page }
+      opt = { fiscalYear, words, page }
       let a = serial.split('');
       if (/[A-Z]{1,1}/i.test(a[a.length - 1])) {
         opt.version = a.pop();
@@ -142,6 +156,7 @@ class PerdrixUtils extends Entity {
       this.output.list(data);
       return
     }
+
 
     if (/^.+[\.!]$/.test(words)) {
       words = words.replace(/[\.!]$/, '');

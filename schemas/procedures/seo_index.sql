@@ -4,7 +4,7 @@ DELIMITER $
 DROP PROCEDURE IF EXISTS `seo_index`$
 CREATE PROCEDURE `seo_index`(
   _word TEXT,
-  _type varchar(16) CHARACTER SET ascii COLLATE ascii_general_ci,
+  _type varchar(500) CHARACTER SET ascii COLLATE ascii_general_ci,
   _reference JSON
 )
 BEGIN

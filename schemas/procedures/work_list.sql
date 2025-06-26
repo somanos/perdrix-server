@@ -92,7 +92,7 @@ BEGIN
     w.*,
     a.id addressId,
     w.id workId,
-    s.city,
+    a.city,
     t.tag `type`,
     _page `page`,
     IFNULL(cb.count, 0) bill,
@@ -113,7 +113,7 @@ BEGIN
     JSON_OBJECT(
       'custId', w.custId,
       'custName', normalize_name(c.category, c.company, c.lastname, c.firstname),
-      'countrycode', c.countrycode,
+      'countrycode', ca.countrycode,
       'location', ca.location,
       'postcode', ca.postcode,
       'city', ca.city,

@@ -10,18 +10,25 @@ class Site extends Entity {
    */
   async create() {
     let args = this.input.get('args');
-    let exists = await this.db.await_func('site_exists', args);
-    let data;
-    if (exists) {
-      data = await this.db.await_proc('site_get', exists);
-      return this.output.data(data);
-    }
-    let { postcode, city } = args;
-    if (!postcode || !city) {
-      this.exception.user("REQUIRE_POSTCODE");
+    let { custId, siteId } = args;
+    if (!custId || siteId) {
+      this.exception.user("REQUIRE_CUST_ID");
       return
     }
-    data = await this.db.await_proc('site_create', args);
+    this.debug("AAA:24", JSON.stringify(args))
+    let data = await this.db.await_proc('site_create', args);
+    this.debug("AAA:26", data)
+    this.output.data(data);
+  }
+
+  /**
+   * 
+   */
+  async create_poc() {
+    let args = this.input.get('args')
+    this.debug("AAA:41", JSON.stringify(args))
+    let data = await this.db.await_proc('site_poc_create', args);
+    this.debug("AAA:43", data)
     this.output.data(data);
   }
 
@@ -39,22 +46,22 @@ class Site extends Entity {
   /**
    * 
    */
-  async add_poc() {
-    let args = this.input.get('args');
-    let data;
-    if (args.pocId && args.custId && args.siteId) {
-      if (args.lastname) {
-        data = await this.db.await_proc('poc_update', args);
-      }
-      data = await this.db.await_proc('site_add_poc', args);
-    } else {
-      let { pocId, custId, siteId } = await this.db.await_proc('poc_create', args);
-      if (pocId) {
-        data = await this.db.await_proc('site_add_poc', { pocId, custId, siteId });
-      }
-    }
-    this.output.data(data);
-  }
+  // async add_poc() {
+  //   let args = this.input.get('args');
+  //   let data;
+  //   if (args.pocId && args.custId && args.siteId) {
+  //     if (args.lastname) {
+  //       data = await this.db.await_proc('poc_update', args);
+  //     }
+  //     data = await this.db.await_proc('site_add_poc', args);
+  //   } else {
+  //     let { pocId, custId, siteId } = await this.db.await_proc('poc_create', args);
+  //     if (pocId) {
+  //       data = await this.db.await_proc('site_add_poc', { pocId, custId, siteId });
+  //     }
+  //   }
+  //   this.output.data(data);
+  // }
 
   /**
    * 
@@ -66,7 +73,9 @@ class Site extends Entity {
     const filter = this.input.get('filter');
     let opt = { custId, page, siteId };
     if (filter) opt.filter = filter;
+    this.debug("AAA:76", JSON.stringify(opt))
     let data = await this.db.await_proc('site_list', opt);
+    this.debug("AAA:76", data)
     this.output.list(data);
   }
 
@@ -82,7 +91,7 @@ class Site extends Entity {
     if (words !== '^.*$') {
       words = `(?i)${words}`
     }
-
+    
     let data = await this.db.await_proc('site_search',
       { words, sort_by, order, page, custId });
     this.output.list(data);

@@ -26,6 +26,9 @@ CREATE TABLE
     PRIMARY KEY (`id`),
     UNIQUE KEY `loc` (`location`,`postcode`,`countrycode`) USING HASH
 );
+DROP TABLE IF EXISTS site;
+CREATE TABLE site LIKE site_bak;
+INSERT INTO site SELECT * FROM site_bak;
 INSERT IGNORE INTO address 
     (
     `housenumber`,
@@ -54,6 +57,9 @@ INSERT IGNORE INTO address
     ctime 
 FROM site;
 
+DROP TABLE IF EXISTS customer;
+CREATE TABLE customer LIKE customer_bak;
+INSERT INTO customer SELECT * FROM customer_bak;
 INSERT IGNORE INTO address 
     (
     `housenumber`,
@@ -101,7 +107,21 @@ UPDATE site set location = JSON_ARRAY(
 );
 
 UPDATE customer c INNER JOIN address a ON c.location=a.location AND c.postcode=a.postcode
-    set c.addressId=a.id;
+    SET c.addressId=a.id;
 
 UPDATE site c INNER JOIN address a ON c.location=a.location AND c.postcode=a.postcode 
-    set c.addressId=a.id;
+    SET c.addressId=a.id;
+
+alter table customer drop column location;
+alter table customer drop column postcode;
+alter table customer drop column citycode;
+alter table customer drop column city;
+alter table customer drop column countrycode;
+alter table customer drop column geometry
+
+alter table site drop column location;
+alter table site drop column postcode;
+alter table site drop column citycode;
+alter table site drop column city;
+alter table site drop column countrycode;
+alter table site drop column geometry;

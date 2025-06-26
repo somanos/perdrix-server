@@ -1,0 +1,12 @@
+set @testid=109308;
+SET @t1=1728518400;
+SET @t2=1746804691;
+delete from customer where id>=@testid;
+delete from site where custId>=@testid;
+delete from note where custId>=@testid;
+delete from work where custId>=@testid;
+delete from quote where custId>=@testid;
+delete from bill where custId>=@testid;
+delete from customerPoc where ctime>@t1;
+delete from sitePoc where ctime>@t2;
+-- delete from poc_map where custId>=@testid;

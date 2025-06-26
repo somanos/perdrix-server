@@ -1,7 +1,5 @@
 
-const { Mariadb } = require('@drumee/server-essentials');
 const { exit, env } = process;
-// const Loto = new Mariadb({ name: 'longchamp', user: env.USER });
 const { basename, extname, resolve } = require('path');
 
 const {
@@ -12,7 +10,6 @@ const {
 const args = require("./args");
 
 let src;
-let output;
 
 if (/^\//.test(args.source)) {
   src = args.source;
@@ -20,10 +17,15 @@ if (/^\//.test(args.source)) {
   src = resolve(__dirname, args.source);
 }
 
+let skip = []
+if (args.skip) {
+  skip = args.skip.split(/[,; ]/)
+}
+
 /**
  * 
  */
-inject(src, output).then(async (rows) => {
+inject(src, skip).then(async (rows) => {
   setTimeout(() => {
     exit();
   }, 500)

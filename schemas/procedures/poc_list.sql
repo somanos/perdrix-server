@@ -10,10 +10,12 @@ BEGIN
   DECLARE _offset bigint;
   DECLARE _page INTEGER DEFAULT 1;
   DECLARE _addressId INTEGER ;
+  DECLARE _type VARCHAR(20) DEFAULT 'site';
   DECLARE _lastname VARCHAR(20) DEFAULT 'desc';
   DECLARE _order VARCHAR(20) DEFAULT 'desc';
 
-  SELECT IFNULL(JSON_VALUE(_args, "$.order"), 'desc') INTO _order;
+  SELECT IFNULL(JSON_VALUE(_args, "$.order"), 'asc') INTO _order;
+  SELECT IFNULL(JSON_VALUE(_args, "$.type"), 'site') INTO _type;
   SELECT IFNULL(JSON_VALUE(_args, "$.page"), 1) INTO _page;
   SELECT IFNULL(JSON_VALUE(_args, "$.pagelength"), 45) INTO @rows_per_page;
 
@@ -25,88 +27,106 @@ BEGIN
   CREATE TEMPORARY TABLE _view AS
   SELECT
     p.id,
+    p.id pocId,
     'customer' category,
-    c.addressId,
+    0 addressId,
+    p.custId,
     p.role,
     g.shortTag gender,
     p.lastname,
     p.firstname,
+    p.email,
+    p.office,
+    p.home,
+    p.mobile,
+    p.fax,
     p.phones,
     _page `page`
   FROM customerPoc p 
-    INNER JOIN customer c ON c.id=custId
     INNER JOIN gender g ON p.gender=g.id 
-    WHERE 
-      IF (_lastname IS NULL, 1, p.lastname REGEXP _lastname) AND
-      IF (_addressId IS NULL, 1, c.addressId=_addressId);
-  INSERT INTO _view SELECT
-    p.id,
-    'site' category,
-    s.addressId,
-    p.role,
-    g.shortTag gender,
-    p.lastname,
-    p.firstname,
-    p.phones,
-    _page `page`
-  FROM sitePoc p 
-    INNER JOIN site s ON s.id=p.siteId
-    INNER JOIN gender g ON p.gender=g.id 
-    WHERE 
-      IF (_lastname IS NULL, 1, p.lastname REGEXP _lastname) AND
-      IF (_addressId IS NULL, 1, s.addressId=_addressId);
+    WHERE 1=2;
 
-  SELECT * FROM _view ORDER BY
-    CASE WHEN LCASE(_order) = 'asc' THEN lastname END ASC,
-    CASE WHEN LCASE(_order) = 'desc' THEN lastname END DESC
-    LIMIT _offset ,_range;
+  IF _type= 'site' THEN
+    INSERT INTO _view SELECT
+      p.id,
+      p.id pocId,
+      'site' category,
+      0 addressId,
+      p.custId,
+      p.role,
+      g.shortTag gender,
+      p.lastname,
+      p.firstname,
+      p.email,
+      p.office,
+      p.home,
+      p.mobile,
+      p.fax,
+      p.phones,
+      _page `page`
+    FROM sitePoc p 
+      INNER JOIN poc_map m ON m.custId=p.custId AND m.category='site'
+      LEFT JOIN gender g ON p.gender=g.id 
+      WHERE 
+        IF (_lastname IS NULL, 1, p.lastname REGEXP _lastname) ORDER BY
+        -- IF (_addressId IS NULL, 1, m.addressId=_addressId) ORDER BY
+        CASE WHEN LCASE(_order) = 'asc' THEN lastname END ASC,
+        CASE WHEN LCASE(_order) = 'desc' THEN lastname END DESC
+        LIMIT _offset ,_range;
+    UPDATE _view v INNER JOIN poc_map m ON m.pocId=v.pocId 
+      SET v.addressId=m.addressId;
+  ELSE
+    INSERT INTO _view SELECT
+      p.id,
+      p.id pocId,
+      'customer' category,
+      0 addressId,
+      p.custId,
+      p.role,
+      g.shortTag gender,
+      p.lastname,
+      p.firstname,
+      p.email,
+      p.office,
+      p.home,
+      p.mobile,
+      p.fax,
+      p.phones,
+      _page `page`
+    FROM customerPoc p 
+      -- INNER JOIN poc_map m ON m.custId=p.custId AND m.category='customer'
+      LEFT JOIN gender g ON p.gender=g.id 
+      WHERE 
+        IF (_lastname IS NULL, 1, p.lastname REGEXP _lastname) ORDER BY
+        -- IF (_addressId IS NULL, 1, m.addressId=_addressId) ORDER BY
+        CASE WHEN LCASE(_order) = 'asc' THEN lastname END ASC,
+        CASE WHEN LCASE(_order) = 'desc' THEN lastname END DESC
+      LIMIT _offset ,_range;
+    UPDATE _view v INNER JOIN poc_map m ON m.pocId=v.pocId 
+      SET v.addressId=m.addressId;
+  END IF;
+
+  SELECT v.*,
+    JSON_OBJECT(
+      'id', c.id,
+      'custId', c.id,
+      'gender', g.shortTag,
+      'companyclass', cc.tag,
+      'custName', normalize_name(c.category, c.company, c.lastname, c.firstname),
+      'location', ca.location,
+      'geometry', ca.geometry,
+      'city', ca.city,
+      'postcode', ca.postcode
+    ) customer 
+  FROM _view v 
+  INNER JOIN customer c ON c.id=v.custId
+  INNER JOIN `address` ca ON c.addressId=ca.id
+  LEFT JOIN gender g ON g.id=c.gender
+  LEFT JOIN companyClass cc ON c.type = cc.id
+  WHERE IF (_addressId IS NULL, 1, v.addressId=_addressId) ORDER BY
+    CASE WHEN LCASE(_order) = 'asc' THEN v.lastname END ASC,
+    CASE WHEN LCASE(_order) = 'desc' THEN v.lastname END DESC;
 END$
 
-
--- DROP PROCEDURE IF EXISTS `poc_list`$
--- CREATE PROCEDURE `poc_list`(
---   IN _args JSON
--- )
--- BEGIN
---   DECLARE _range bigint;
---   DECLARE _offset bigint;
---   DECLARE _page INTEGER DEFAULT 1;
---   DECLARE _filter JSON ;
---   DECLARE _i TINYINT(6) unsigned DEFAULT 0;
-
---   SELECT IFNULL(JSON_VALUE(_args, "$.page"), 1) INTO @_page;
---   SELECT IFNULL(JSON_VALUE(_args, "$.pagelength"), 45) INTO @rows_per_page;  
---   CALL yp.pageToLimits(_page, _offset, _range);
-
---   SELECT JSON_EXTRACT(_args, "$.filter") INTO _filter;
-
---   SET @stm = "ORDER BY";
---   IF JSON_TYPE(_filter) = 'ARRAY' AND JSON_LENGTH(_filter)>0 THEN 
---     WHILE _i < JSON_LENGTH(_filter) DO 
---       SELECT JSON_EXTRACT(_filter, CONCAT("$[", _i, "]")) INTO @r;
---       SELECT JSON_VALUE(@r, "$.name") INTO @_name;
---       SELECT JSON_VALUE(@r, "$.value") INTO @_value;
---       SELECT CONCAT(@stm, " ", @_name, " ", @_value) INTO @stm;
---       IF(_i < JSON_LENGTH(_filter) - 1) THEN
---         SELECT CONCAT(@stm, ",") INTO @stm;
---       END IF;
---       SELECT _i + 1 INTO _i;
---     END WHILE;
---   ELSE
---     SELECT CONCAT(@stm, " ", "lastname asc") INTO @stm;
---   END IF;
-
---   SET @stm = CONCAT("SELECT ",
---     "p.id, lastname, firstname, email, phones, p.id pocId, ",
---     "g.shortTag gender, @_page page ",
---     "FROM poc p INNER JOIN gender g ON p.gender = g.id ", 
---     @stm, " ", "LIMIT ?, ?"
---   );
-
---   PREPARE stmt FROM @stm;
---   EXECUTE stmt USING _offset, _range;
---   DEALLOCATE PREPARE stmt;
-
--- END$
 
 DELIMITER ;

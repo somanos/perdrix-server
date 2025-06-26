@@ -32,9 +32,10 @@ class Poc extends Entity {
     // const filter = this.input.get('filter');
     // let opt = { custId, page };
     // if (filter) opt.filter = filter;
+    let page = this.input.get(Attr.page)
     let args = this.input.get('args')
-    this.debug("AAA:26 list", JSON.stringify(args))
-    let data = await this.db.await_proc('poc_list', args);
+    this.debug("AAA:36 list", JSON.stringify({ page, ...args }))
+    let data = await this.db.await_proc('poc_list', { page, ...args });
     this.output.list(data);
   }
 
@@ -43,12 +44,10 @@ class Poc extends Entity {
    */
   async search() {
     const page = this.input.get(Attr.page);
-    let words = this.input.get('words') || '^.*$';
-    let key = this.input.get(Attr.key) || 'lastname';
-    if (!/^(\^).+/) {
-      words = `^${words}`;
-    }
-    let data = await this.db.await_proc('poc_search', { key, words, page });
+    let words = this.input.get('words');
+    this.debug("AAA:47 list", JSON.stringify({ lastname: words, page }))
+    let data = await this.db.await_proc('poc_list', { lastname: words, page });
+    this.debug("AAA:49 list", JSON.stringify({ lastname: words, page }))
     this.output.list(data);
   }
 

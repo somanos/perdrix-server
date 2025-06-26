@@ -21,9 +21,7 @@ class Customer extends Entity {
    */
   async create() {
     let args = this.input.get('args')
-    this.debug("AAA:26", JSON.stringify(args))
     let data = await this.db.await_proc('customer_create', args);
-    this.debug("AAA:26", data)
     this.output.data(data);
   }
 
@@ -32,8 +30,21 @@ class Customer extends Entity {
    */
   async customer_get() {
     const custId = this.input.get('custId');
+    this.debug("AAA:33", JSON.stringify(args))
     let data = await this.db.await_proc('customer_list', { custId });
+    this.debug("AAA:353", data)
     this.output.list(data);
+  }
+
+  /**
+   * 
+   */
+  async create_poc() {
+    let args = this.input.get('args')
+    this.debug("AAA:41", JSON.stringify(args))
+    let data = await this.db.await_proc('costumer_poc_create', args);
+    this.debug("AAA:43", data)
+    this.output.data(data);
   }
 
   /**

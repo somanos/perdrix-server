@@ -14,6 +14,10 @@ parser.addArgument("--output", {
 	type: String,
 	help: "Output file ",
 });
+parser.addArgument("--skip", {
+	type: String,
+	help: "Skip column",
+});
 parser.addArgument("--db", {
 	type: String,
 	required: true,

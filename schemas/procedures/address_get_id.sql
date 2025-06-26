@@ -1,7 +1,6 @@
 
 DELIMITER $
 
-DROP FUNCTION IF EXISTS `adress_get_id`$
 DROP FUNCTION IF EXISTS `address_get_id`$
 CREATE FUNCTION `address_get_id`(
   _location JSON,

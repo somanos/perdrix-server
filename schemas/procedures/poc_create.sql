@@ -54,7 +54,10 @@ BEGIN
     _lastname,
     _firstname,
     _email,
-    _phones,
+    _office,
+    _home, 
+    _mobile, 
+    _fax,
     UNIX_TIMESTAMP(),
     1;
 
@@ -70,11 +73,15 @@ BEGIN
         _lastname,
         _firstname,
         _email,
-        _phones,
+        _office,
+        _home, 
+        _mobile, 
+        _fax,
         UNIX_TIMESTAMP(),
         1;
   END IF;
 
+  SELECT max(id) FROM `poc` INTO _id;
   SELECT JSON_OBJECT(
     'id', _id,
     'table', 'site'
@@ -103,7 +110,6 @@ BEGIN
     CALL seo_index(_streetname, 'site_streetName', _reference);
   END IF;
 
-  SELECT max(id) FROM `poc` INTO _id;
   CALL poc_get(_id);
 END$
 

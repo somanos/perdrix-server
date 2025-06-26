@@ -61,6 +61,7 @@ BEGIN
       'site',
       JSON_OBJECT(
         'id', s.id,
+        'addressId', a.id,
         'siteId', s.id,
         'location', a.location,
         'geometry', a.geometry,
@@ -70,13 +71,14 @@ BEGIN
       JSON_ARRAY(
         JSON_OBJECT(
           'custId', c.id,
+          'addressId', ca.id,
           'custName', normalize_name(c.category, c.company, c.lastname, c.firstname),
           'companyclass', cc.tag,
           'gender', g.shortTag,
           'location', a.location,
-          'city', a.city,
-          'geometry', a.geometry,
-          'postcode', a.postcode
+          'city', ca.city,
+          'geometry', ca.geometry,
+          'postcode', ca.postcode
         )
       )
       FROM `site` s 
@@ -84,6 +86,7 @@ BEGIN
         INNER JOIN customer c ON c.id=s.custId AND s.id=o.id
         INNER JOIN _results r USING(ref_id) 
         INNER JOIN `address` a ON s.addressId=a.id
+        INNER JOIN `address` ca ON c.addressId=ca.id
         LEFT JOIN gender g ON g.id=c.gender
         LEFT JOIN companyClass cc ON c.type = cc.id
         WHERE o.table = 'site';
@@ -97,6 +100,7 @@ BEGIN
       'customer',
       JSON_OBJECT(
         'id', c.id,
+        'addressId', a.id,
         'custId', c.id,
         'custName', normalize_name(c.category, c.company, c.lastname, c.firstname),
         'companyclass', cc.tag,
@@ -125,19 +129,42 @@ BEGIN
       JSON_OBJECT(
         'id', p.id,
         'pocId', p.id,
+        'category', 'site',
         'gender', g.shortTag,
         'lastname', p.lastname,
         'firstname', p.firstname,
         'pocName', normalize_name(1, '', p.lastname, p.firstname) ,
         'email', p.email,
         'phones', p.phones
-      ) poc,
+      ),
       JSON_ARRAY()
-      FROM poc p
+      FROM sitePoc p
         INNER JOIN seo_object o USING(id) 
         INNER JOIN _results r USING(ref_id)
         LEFT JOIN gender g ON g.id=p.gender
-        WHERE o.table = 'poc';
+        WHERE o.table = 'sitePoc';
+    REPLACE INTO _view SELECT 
+      p.id, 
+      r.word,
+      r.relevance,
+      'poc',
+      JSON_OBJECT(
+        'id', p.id,
+        'pocId', p.id,
+        'category', 'customer',
+        'gender', g.shortTag,
+        'lastname', p.lastname,
+        'firstname', p.firstname,
+        'pocName', normalize_name(1, '', p.lastname, p.firstname) ,
+        'email', p.email,
+        'phones', p.phones
+      ),
+      JSON_ARRAY()
+      FROM customerPoc p
+        INNER JOIN seo_object o USING(id) 
+        INNER JOIN _results r USING(ref_id)
+        LEFT JOIN gender g ON g.id=p.gender
+        WHERE o.table = 'customerPoc';
   END IF;
 
   IF _tables IS NULL OR json_array_contains(_tables, "work") THEN
@@ -149,29 +176,32 @@ BEGIN
       JSON_OBJECT(
         'id', w.id,
         'type',  wt.tag,
+        'addressId', a.id,
         'siteId', s.id,
         'workId', w.id,
-        'location', s.location,
+        'location', a.location,
         'description', w.description,
-        'city', s.city,
-        'postcode', s.postcode,
+        'city', a.city,
+        'postcode', a.postcode,
         'ctime', w.ctime
       ),
       JSON_ARRAY(
         JSON_OBJECT(
           'id', c.id,
           'custId', c.id,
+          'addressId', ca.id,
           'gender', g.shortTag,
           'companyclass', cc.tag,
           'custName', normalize_name(c.category, c.company, c.lastname, c.firstname),
-          'location', a.location,
-          'site', a.location,
-          'geometry', a.geometry,
-          'city', a.city,
-          'postcode', a.postcode
+          'location', ca.location,
+          'site', ca.location,
+          'geometry', ca.geometry,
+          'city', ca.city,
+          'postcode', ca.postcode
         ),
         JSON_OBJECT(
           'id', s.id,
+          'addressId', a.id,
           'siteId', s.id,
           'location', a.location,
           'geometry', a.geometry,
@@ -186,6 +216,7 @@ BEGIN
         INNER JOIN workType wt ON w.category=wt.id
         INNER JOIN customer c ON c.id=w.custId
         INNER JOIN `address` a ON s.addressId=a.id
+        INNER JOIN `address` ca ON c.addressId=ca.id
         LEFT JOIN gender g ON g.id=c.gender
         LEFT JOIN companyClass cc ON c.type = cc.id
         WHERE o.table = 'work';
