@@ -45,7 +45,7 @@ BEGIN
     _page `page`,
     JSON_OBJECT(
       'custId', w.custId,
-      'countrycode', s.countrycode,
+      'countrycode', a.countrycode,
       'location', a.location,
       'postcode', a.postcode,
       'city', a.city,
@@ -58,7 +58,7 @@ BEGIN
     JSON_OBJECT(
       'custId', w.custId,
       'custName', normalize_name(c.category, c.company, c.lastname, c.firstname),
-      'countrycode', c.countrycode,
+      'countrycode', ca.countrycode,
       'location', ca.location,
       'postcode', ca.postcode,
       'city', ca.city,

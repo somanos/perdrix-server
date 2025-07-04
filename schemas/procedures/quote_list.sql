@@ -56,7 +56,7 @@ BEGIN
     JSON_OBJECT(
       'custId', w.custId,
       'custName', normalize_name(c.category, c.company, c.lastname, c.firstname),
-      'countrycode', c.countrycode,
+      'countrycode', ca.countrycode,
       'location', ca.location,
       'postcode', ca.postcode,
       'city', ca.city,

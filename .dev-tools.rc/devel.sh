@@ -16,3 +16,4 @@
 # You may change to values to your own environment
 export CONTAINER_NAME=perdrix
 export DEST_DIR=${HOME}/.config/${CONTAINER_NAME}/plugins
+export ENDPOINT=devel

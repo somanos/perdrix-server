@@ -53,6 +53,7 @@ class Sales extends DrumeeMfs {
     let { template, prefix, tpl_dir, locale = 'fr' } = args;
     let custom_tpl = Cache.getSysConf('custom_tpl') || '/.ini/templates';
     let nid = await this.db.await_func('node_id_from_path', join(custom_tpl, template));
+    this.debug("AAA:56", nid, args)
     let template_file;
     if (nid) {
       let node = await this.db.await_proc('mfs_node_attr', nid);

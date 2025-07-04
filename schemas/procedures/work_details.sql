@@ -11,17 +11,28 @@ BEGIN
   SELECT
     w.*,
     w.id workId,
+    a.id addressId,
     q.id quoteId,
     t.tag `type`,
     (SELECT count(*) FROM bill WHERE workId=_workId) bill,
     (SELECT count(*) FROM quote WHERE workId=_workId) quote,
     (SELECT count(*) FROM note WHERE workId=_workId) note,
     JSON_OBJECT(
-      'countrycode', s.countrycode,
-      'location', s.location,
-      'postcode', s.postcode,
-      'city', s.city,
-      'geometry', s.geometry,
+      'custId', w.custId,
+      'custName', normalize_name(c.category, c.company, c.lastname, c.firstname),
+      'countrycode', ca.countrycode,
+      'location', ca.location,
+      'postcode', ca.postcode,
+      'city', ca.city,
+      'geometry', ca.geometry
+    ) `customer`,
+    JSON_OBJECT(
+      'custId', w.custId,
+      'countrycode', a.countrycode,
+      'location', a.location,
+      'postcode', a.postcode,
+      'city', a.city,
+      'geometry', a.geometry,
       'ctime', s.ctime,
       'statut', s.statut,
       'siteId', s.id,
@@ -30,6 +41,9 @@ BEGIN
   FROM work w
     LEFT JOIN quote q ON w.custId=q.custId AND w.id=q.workId
     INNER JOIN `site` s ON s.custId=w.custId AND w.siteId=s.id
+    INNER JOIN `customer` c ON c.id=w.custId 
+    INNER JOIN `address` a ON s.addressId=a.id
+    INNER JOIN `address` ca ON c.addressId=ca.id
     INNER JOIN `workType` t ON t.id=w.category
     WHERE w.id=_workId
     ORDER BY q.chrono DESC LIMIT 1;
