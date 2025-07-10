@@ -68,6 +68,45 @@ class PerdrixUtils extends Entity {
   }
 
   /**
+   * 
+   * @param {*} res 
+   */
+  _parse_location(res = [], words) {
+    let args = {}
+    if (!res[0]) return args;
+    let { properties } = res[0] || {}
+    let streettype, number, streetname;
+    let { housenumber, street, city, type, postcode } = properties;
+    number = housenumber
+    if (/street|housenumber/.test(type)) {
+      let a = street.split(' ');
+      streettype = a[0];
+      a.shift()
+      if (/^(de|du|des|de la|la|le|les)$/.test(a[0])) {
+        a.shift()
+      }
+      streetname = a.join(' ')
+    } else {
+      streetname = street
+    }
+    args.street = streetname;
+    if (number) {
+      args.housenumber = number;
+    }
+    city = city.replace(/[\-\' ]+/g, '.')
+    let re = new RegExp(city, 'i')
+    this.debug("AAA:136", type, re, words);
+    if (re.test(words)) {
+      args.city = city;
+    }
+    re = new RegExp(postcode)
+    if (re.test(words)) {
+      args.postcode = postcode;
+    }
+    return args;
+  }
+
+  /**
     * 
     */
   async get_geoloc() {
@@ -105,18 +144,137 @@ class PerdrixUtils extends Entity {
   }
 
 
+
+  /**
+   * 
+   */
+  async search_with_address(words = "", proc, key=Attr.lastname) {
+    let args = {};
+    let data = []
+    let [poc, address] = words.split(/@+/)
+    if (poc) {
+      if (poc.phoneNumber()) {
+        args.phones = poc.replace(/ +/g, ' *');
+      } else {
+        args[key] = poc;
+      }
+    }
+    if (address) {
+      let res = await this._search_location(address);
+      let opt = this._parse_location(res, address);
+      args = { ...args, ...opt }
+    }
+    this.debug("AAA:167", proc, JSON.stringify(args))
+    data = await this.db.await_proc(proc, args);
+    this.output.list(data)
+  }
+
+  /**
+   * 
+   */
+  // async search_sitePoc(words = "") {
+  //   let args = {};
+  //   let data = []
+  //   let [poc, address] = words.split('@')
+  //   if (poc) {
+  //     if (poc.phoneNumber()) {
+  //       args.phones = poc.replace(/ +/g, ' *');
+  //     } else {
+  //       args.lastname = poc;
+  //     }
+  //   }
+  //   if (address) {
+  //     let res = await this._search_location(address);
+  //     let opt = this._parse_location(res, address);
+  //     args = { ...args, ...opt }
+  //   }
+  //   data = await this.db.await_proc('search_sitePoc', args);
+  //   this.output.list(data)
+  // }
+
+  /**
+ * 
+ */
+  async search_by_content(words, proc) {
+    let res = await this._search_location(words);
+    let args = this._parse_location(res, words);
+    let data = await this.db.await_proc(proc, args);
+    this.output.list(data)
+  }
+
+  /**
+   * 
+   */
+  async search_site(words = "") {
+    let res = await this._search_location(words);
+    let args = this._parse_location(res, words);
+    let data = await this.db.await_proc('search_site', args);
+    this.output.list(data)
+  }
+
+  /**
+   * 
+   */
+  async search_in_table(table, words) {
+    switch (table) {
+      case "address":
+        return this.search_with_address(`@${words}`, "address_list")
+      case "customerPoc":
+        return this.search_with_address(words, "search_customerPoc")
+      case "site":
+        return this.search_with_address(`@${words}`, "search_site")
+        return this.search_by_content(words, 'search_site')
+      // return this.search_site(words)
+      case "customer":
+        return this.search_with_address(words, 'search_customer')
+      // return this.search_customer(words)
+      case "sitePoc":
+        return this.search_with_address(words, "search_sitePoc")
+      case "quote":
+        return this.search_with_address(words, "search_quote", "description")
+      case "bill":
+        return this.search_with_address(words, "search_bill", "description")
+      case "work":
+        return this.search_with_address(words, "search_mission", "description")
+      default:
+        this.warn(`Unexpected table ${table}`);
+        this.output.list([])
+    }
+  }
+
+  /**
+  * 
+  */
+  async _search_location(words) {
+    let api_endpoint = Cache.getSysConf('address_api_endpoint');
+    let url = api_endpoint.format(words)
+    this.debug("AAA:63 waiting for", { words, url })
+    return new Promise((resolve) => {
+      Network.request(url).then((data) => {
+        let { features } = data || {};
+        resolve(features);
+      }).catch((e) => {
+        this.warn("Failed to get data from ", { words, url }, e.statusMessage);
+        resolve([]);
+      });
+    })
+  }
+
   /**
     * 
   */
   async search() {
     let words = this.input.get('words') || 'nom';
+    let table = this.input.get('table');
+    if (table) {
+      return this.search_in_table(table, words);
+    }
     let tables = this.input.get('tables') || [];
     const page = this.input.get(Attr.page);
     if (!page) page = 1;
     let search_by_id = 0;
     let data;
     let opt;
-
     if (/^[0-9]+([ ,])+[A-Z]+.+$/i.test(words)) {
       opt = { words, page }
       data = await this.db.await_proc('search_by_address', opt);
@@ -168,6 +326,7 @@ class PerdrixUtils extends Entity {
     this.output.list(data);
   }
 
+
   /**
     * 
     */
@@ -176,19 +335,8 @@ class PerdrixUtils extends Entity {
     words = words.replace(/ +/g, '+');
     let api_endpoint = Cache.getSysConf('address_api_endpoint');
     let url = api_endpoint.format(words)
-    this.debug("AAA:63 waiting for", { words, url })
-    Network.request(url).then((data) => {
-      let { features } = data || {};
-      let r = features.map((e) => {
-        e.id = e.properties.id;
-        return e;
-      })
-      //this.debug("AAA:143", features)
-      this.output.list(features);
-    }).catch((e) => {
-      this.warn("Failed to get data from ", { words, url }, e)
-      this.output.list([]);
-    });
+    let features = await this._search_location(words)
+    this.output.list(features);
   }
 
 }

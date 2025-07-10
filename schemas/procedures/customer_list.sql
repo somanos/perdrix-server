@@ -38,7 +38,6 @@ BEGIN
     a.housenumber,
     a.streettype,
     a.streetname,
-    a.additional,
     a.city,
     a.postcode
   FROM customer c

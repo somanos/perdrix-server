@@ -38,7 +38,17 @@ BEGIN
     a.geometry,
     a.streetname,
     a.city,
-    a.postcode
+    a.postcode,
+    'address' `type`,
+    JSON_ARRAY() reference,
+    JSON_OBJECT(
+      'id', a.id,
+      'addressId', a.id,
+      'location', a.location,
+      'geometry', a.geometry,
+      'city', a.city,
+      'postcode', a.postcode
+    ) content
   FROM address a WHERE 
     IF(_housenumber IS NULL, 1, a.housenumber REGEXP _housenumber) AND
     IF(_streettype IS NULL, 1, a.streettype REGEXP _streettype) AND
