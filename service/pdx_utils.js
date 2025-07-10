@@ -2,6 +2,7 @@ const { Entity } = require('@drumee/server-core');
 const {
   Cache, Attr, Network
 } = require('@drumee/server-essentials');
+const { AsYouType } = require('libphonenumber-js')
 
 class PerdrixUtils extends Entity {
 
@@ -95,7 +96,7 @@ class PerdrixUtils extends Entity {
     }
     city = city.replace(/[\-\' ]+/g, '.')
     let re = new RegExp(city, 'i')
-    this.debug("AAA:136", type, re, words);
+    // this.debug("AAA:136", type, re, words);
     if (re.test(words)) {
       args.city = city;
     }
@@ -135,7 +136,6 @@ class PerdrixUtils extends Entity {
           }
         }
       }
-      this.debug("AAA:100", res)
       this.output.data(res);
     }).catch((e) => {
       this.warn("Failed to get data from ", { words, url }, e)
@@ -154,6 +154,7 @@ class PerdrixUtils extends Entity {
     let [poc, address] = words.split(/@+/)
     if (poc) {
       if (poc.phoneNumber()) {
+        poc = new AsYouType('FR').input(poc)
         args.phones = poc.replace(/ +/g, ' *');
       } else {
         args[key] = poc;
@@ -164,7 +165,6 @@ class PerdrixUtils extends Entity {
       let opt = this._parse_location(res, address);
       args = { ...args, ...opt }
     }
-    this.debug("AAA:167", proc, JSON.stringify(args))
     data = await this.db.await_proc(proc, args);
     this.output.list(data)
   }
@@ -195,22 +195,22 @@ class PerdrixUtils extends Entity {
   /**
  * 
  */
-  async search_by_content(words, proc) {
-    let res = await this._search_location(words);
-    let args = this._parse_location(res, words);
-    let data = await this.db.await_proc(proc, args);
-    this.output.list(data)
-  }
+  // async search_by_content(words, proc) {
+  //   let res = await this._search_location(words);
+  //   let args = this._parse_location(res, words);
+  //   let data = await this.db.await_proc(proc, args);
+  //   this.output.list(data)
+  // }
 
   /**
    * 
    */
-  async search_site(words = "") {
-    let res = await this._search_location(words);
-    let args = this._parse_location(res, words);
-    let data = await this.db.await_proc('search_site', args);
-    this.output.list(data)
-  }
+  // async search_site(words = "") {
+  //   let res = await this._search_location(words);
+  //   let args = this._parse_location(res, words);
+  //   let data = await this.db.await_proc('search_site', args);
+  //   this.output.list(data)
+  // }
 
   /**
    * 
@@ -248,7 +248,7 @@ class PerdrixUtils extends Entity {
   async _search_location(words) {
     let api_endpoint = Cache.getSysConf('address_api_endpoint');
     let url = api_endpoint.format(words)
-    this.debug("AAA:63 waiting for", { words, url })
+    // this.debug("AAA:63 waiting for", { words, url })
     return new Promise((resolve) => {
       Network.request(url).then((data) => {
         let { features } = data || {};
@@ -296,7 +296,7 @@ class PerdrixUtils extends Entity {
     }
     if (search_by_id) {
       let [fiscalYear, serial = ""] = words.split('.');
-      this.debug("AAA:124 seo_search", { fiscalYear, serial })
+      // this.debug("AAA:124 seo_search", { fiscalYear, serial })
       opt = { fiscalYear, words, page }
       let a = serial.split('');
       if (/[A-Z]{1,1}/i.test(a[a.length - 1])) {
@@ -309,7 +309,7 @@ class PerdrixUtils extends Entity {
         opt.serial = opt.serial.replace(/^[\^0]+/, '');
         opt.serial = `^${opt.serial}`
       }
-      this.debug("AAA:135 seo_search", JSON.stringify(opt), JSON.stringify(tables))
+      // this.debug("AAA:135 seo_search", JSON.stringify(opt), JSON.stringify(tables))
       data = await this.db.await_proc('search_by_id', opt, tables);
       this.output.list(data);
       return
@@ -321,7 +321,7 @@ class PerdrixUtils extends Entity {
     } else {
       if (!/^.+\*$/.test(words)) words = words + "*";
     }
-    this.debug("AAA:147 seo_search", JSON.stringify({ words, page }), JSON.stringify(tables))
+    // this.debug("AAA:147 seo_search", JSON.stringify({ words, page }), JSON.stringify(tables))
     data = await this.db.await_proc('seo_search', { words, page }, tables);
     this.output.list(data);
   }
