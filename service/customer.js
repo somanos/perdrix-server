@@ -10,6 +10,12 @@ class Customer extends Entity {
    */
   async list() {
     let args = this.input.get('args');
+    if(!args.words || !args.words.length){
+      return this.output.list([]);
+    }
+    if(args.words.length <=3){
+      args.words = `^${args.words}`
+    }
     this.debug('AAA:49', JSON.stringify(args));
     let data = await this.db.await_proc('customer_list', args);
     this.output.list(data);
