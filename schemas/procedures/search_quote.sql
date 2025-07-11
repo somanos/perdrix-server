@@ -18,7 +18,7 @@ BEGIN
   DECLARE _street TEXT;
   DECLARE _city TEXT;
   DECLARE _postcode TEXT;
-
+  DECLARE _lastname TEXT;
 
   SELECT IFNULL(JSON_VALUE(_args, "$.sort_by"), 'lastname') INTO _sort_by;
   SELECT IFNULL(JSON_VALUE(_args, "$.order"), 'asc') INTO _order;
@@ -29,6 +29,7 @@ BEGIN
   SELECT JSON_VALUE(_args, "$.streettype") INTO _streettype;
   SELECT JSON_VALUE(_args, "$.city") INTO _city;
   SELECT JSON_VALUE(_args, "$.postcode") INTO _postcode;
+  SELECT JSON_VALUE(_args, "$.lastname") INTO _lastname;
 
   CALL yp.pageToLimits(_page, _offset, _range);
   SELECT 
@@ -89,6 +90,7 @@ BEGIN
         LEFT JOIN gender g ON g.id=c.gender
         WHERE 
           IF(_description IS NULL, 1, q.description REGEXP _description) AND
+          IF(_lastname IS NULL, 1, c.lastname REGEXP _lastname OR c.company REGEXP _lastname) AND
           IF(_housenumber IS NULL, 1, a.housenumber REGEXP _housenumber) AND
           IF(_streettype IS NULL, 1, a.streettype REGEXP _streettype) AND
           IF(_street IS NULL, 1, a.streetname REGEXP _street) AND

@@ -231,9 +231,9 @@ class PerdrixUtils extends Entity {
       case "sitePoc":
         return this.search_with_address(words, "search_sitePoc")
       case "quote":
-        return this.search_with_address(words, "search_quote", "description")
+        return this.search_with_address(words, "search_quote")
       case "bill":
-        return this.search_with_address(words, "search_bill", "description")
+        return this.search_with_address(words, "search_bill")
       case "work":
         return this.search_with_address(words, "search_mission", "description")
       default:
