@@ -12,8 +12,6 @@ BEGIN
   DECLARE _streetcode INTEGER;
   DECLARE _streetname VARCHAR(512);
   DECLARE _additional VARCHAR(512);
-  DECLARE _floor VARCHAR(512);
-  DECLARE _roomnumber VARCHAR(512);
   DECLARE _ccode INTEGER;
   DECLARE _postcode INTEGER;
   DECLARE _citycode INTEGER;
@@ -27,8 +25,6 @@ BEGIN
   SELECT IFNULL(JSON_VALUE(_args, "$.streettype"), "") INTO _streettype;
   SELECT IFNULL(JSON_VALUE(_args, "$.streetname"), "") INTO _streetname;
   SELECT IFNULL(JSON_VALUE(_args, "$.additional"), "") INTO _additional;
-  SELECT IFNULL(JSON_VALUE(_args, "$.floor"), "") INTO _floor;
-  SELECT IFNULL(JSON_VALUE(_args, "$.roomnumber"), "") INTO _roomnumber;
   SELECT IFNULL(JSON_VALUE(_args, "$.postcode"), 99999) INTO _postcode;
   SELECT IFNULL(JSON_VALUE(_args, "$.city"), _postcode) INTO _city;
   SELECT IFNULL(JSON_VALUE(_args, "$.countrycode"), 'France') INTO  _countrycode;

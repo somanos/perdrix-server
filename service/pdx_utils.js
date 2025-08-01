@@ -150,7 +150,8 @@ class PerdrixUtils extends Entity {
    */
   async search_with_address(words = "", proc, key=Attr.lastname) {
     let args = {};
-    let data = []
+    let data = [];
+    words = words.replace(/\*/g, "")
     let [poc, address] = words.split(/@+/)
     if (poc) {
       if (poc.phoneNumber()) {
@@ -161,61 +162,22 @@ class PerdrixUtils extends Entity {
       }
     }
     if (address) {
+      this.debug("AAA:164", address)
       let res = await this._search_location(address);
       let opt = this._parse_location(res, address);
       args = { ...args, ...opt }
+       this.debug("AAA:168", args)
     }
     data = await this.db.await_proc(proc, args);
     this.output.list(data)
   }
 
-  /**
-   * 
-   */
-  // async search_sitePoc(words = "") {
-  //   let args = {};
-  //   let data = []
-  //   let [poc, address] = words.split('@')
-  //   if (poc) {
-  //     if (poc.phoneNumber()) {
-  //       args.phones = poc.replace(/ +/g, ' *');
-  //     } else {
-  //       args.lastname = poc;
-  //     }
-  //   }
-  //   if (address) {
-  //     let res = await this._search_location(address);
-  //     let opt = this._parse_location(res, address);
-  //     args = { ...args, ...opt }
-  //   }
-  //   data = await this.db.await_proc('search_sitePoc', args);
-  //   this.output.list(data)
-  // }
-
-  /**
- * 
- */
-  // async search_by_content(words, proc) {
-  //   let res = await this._search_location(words);
-  //   let args = this._parse_location(res, words);
-  //   let data = await this.db.await_proc(proc, args);
-  //   this.output.list(data)
-  // }
-
-  /**
-   * 
-   */
-  // async search_site(words = "") {
-  //   let res = await this._search_location(words);
-  //   let args = this._parse_location(res, words);
-  //   let data = await this.db.await_proc('search_site', args);
-  //   this.output.list(data)
-  // }
 
   /**
    * 
    */
   async search_in_table(table, words) {
+    this.debug("AAA:219", table, words)
     switch (table) {
       case "address":
         return this.search_with_address(`@${words}`, "address_list")
@@ -223,8 +185,6 @@ class PerdrixUtils extends Entity {
         return this.search_with_address(words, "search_customerPoc")
       case "site":
         return this.search_with_address(`@${words}`, "search_site")
-        return this.search_by_content(words, 'search_site')
-      // return this.search_site(words)
       case "customer":
         return this.search_with_address(words, 'search_customer')
       // return this.search_customer(words)
@@ -248,7 +208,6 @@ class PerdrixUtils extends Entity {
   async _search_location(words) {
     let api_endpoint = Cache.getSysConf('address_api_endpoint');
     let url = api_endpoint.format(words)
-    // this.debug("AAA:63 waiting for", { words, url })
     return new Promise((resolve) => {
       Network.request(url).then((data) => {
         let { features } = data || {};
@@ -338,7 +297,6 @@ class PerdrixUtils extends Entity {
     let features = await this._search_location(words)
     this.output.list(features);
   }
-
 }
 
 

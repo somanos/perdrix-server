@@ -16,10 +16,7 @@ BEGIN
     JSON_VALUE(_location, "$[0]")=housenumber AND
     JSON_VALUE(_location, "$[1]")=streettype AND
     JSON_VALUE(_location, "$[2]")=streetname AND
-    JSON_VALUE(_location, CONCAT("$[3]"))=additional AND
-    JSON_VALUE(_location, CONCAT("$[4]"))=floor AND
-    JSON_VALUE(_location, CONCAT("$[5]"))=roomnumber
-    INTO _id;
+    JSON_VALUE(_location, CONCAT("$[3]"))=additional INTO _id;
   RETURN _id;
 END$
  

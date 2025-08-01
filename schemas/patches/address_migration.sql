@@ -6,16 +6,12 @@ CREATE TABLE
     `streettype` varchar(50) DEFAULT "",
     `streetname` varchar(200) DEFAULT "",
     `additional` varchar(200) DEFAULT "",
-    `floor` varchar(100) DEFAULT "",
-    `roomnumber` varchar(100) DEFAULT "",
     `location` JSON GENERATED ALWAYS AS (
       JSON_ARRAY(
         IFNULL(housenumber,""),
         IFNULL(streettype,""),
         IFNULL(streetname,""),
-        IFNULL(additional,""),
-        IFNULL(floor,""),
-        IFNULL(roomnumber,"")
+        IFNULL(additional,"")
       )
     ) VIRTUAL,
     `postcode` varchar(200) DEFAULT NULL,
@@ -24,7 +20,7 @@ CREATE TABLE
     `geometry` JSON,
     `ctime` int(11) unsigned DEFAULT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `loc` (`location`,`postcode`,`countrycode`) USING HASH
+    UNIQUE KEY `loc` (`housenumber`, `streettype`, `streetname`, `additional`, `postcode`, `countrycode`)
 );
 DROP TABLE IF EXISTS site;
 CREATE TABLE site LIKE site_bak;
@@ -35,8 +31,6 @@ INSERT IGNORE INTO address
     `streettype`,
     `streetname`,
     `additional`,
-    `floor`,
-    `roomnumber`,
     `postcode`,
     `city`,
     `countrycode`,
@@ -47,9 +41,7 @@ INSERT IGNORE INTO address
     IFNULL(JSON_VALUE(location, "$[0]"), ""), 
     IFNULL(JSON_VALUE(location, "$[1]"), ""), 
     IFNULL(JSON_VALUE(location, "$[2]"), ""), 
-    IFNULL(JSON_VALUE(location, "$[3]"), ""), 
-    IFNULL(JSON_VALUE(location, "$[4]"), ""), 
-    IFNULL(JSON_VALUE(location, "$[5]"), ""), 
+    IFNULL(JSON_VALUE(location, "$[3]"), ""),
     postcode, 
     city, 
     countrycode, 
@@ -66,8 +58,6 @@ INSERT IGNORE INTO address
     `streettype`,
     `streetname`,
     `additional`,
-    `floor`,
-    `roomnumber`,
     `postcode`,
     `city`,
     `countrycode`,
@@ -79,8 +69,6 @@ INSERT IGNORE INTO address
     IFNULL(JSON_VALUE(location, "$[1]"), ""), 
     IFNULL(JSON_VALUE(location, "$[2]"), ""), 
     IFNULL(JSON_VALUE(location, "$[3]"), ""), 
-    IFNULL(JSON_VALUE(location, "$[4]"), ""), 
-    IFNULL(JSON_VALUE(location, "$[5]"), ""), 
     postcode, 
     city, 
     countrycode, 
@@ -92,18 +80,14 @@ UPDATE customer set location = JSON_ARRAY(
     IFNULL(JSON_VALUE(location, "$[0]"), ""), 
     IFNULL(JSON_VALUE(location, "$[1]"), ""), 
     IFNULL(JSON_VALUE(location, "$[2]"), ""), 
-    IFNULL(JSON_VALUE(location, "$[3]"), ""), 
-    IFNULL(JSON_VALUE(location, "$[4]"), ""), 
-    IFNULL(JSON_VALUE(location, "$[5]"), "") 
+    IFNULL(JSON_VALUE(location, "$[3]"), "")
 );
 
 UPDATE site set location = JSON_ARRAY(
     IFNULL(JSON_VALUE(location, "$[0]"), ""), 
     IFNULL(JSON_VALUE(location, "$[1]"), ""), 
     IFNULL(JSON_VALUE(location, "$[2]"), ""), 
-    IFNULL(JSON_VALUE(location, "$[3]"), ""), 
-    IFNULL(JSON_VALUE(location, "$[4]"), ""), 
-    IFNULL(JSON_VALUE(location, "$[5]"), "") 
+    IFNULL(JSON_VALUE(location, "$[3]"), "")
 );
 
 UPDATE customer c INNER JOIN address a ON c.location=a.location AND c.postcode=a.postcode
@@ -117,7 +101,7 @@ alter table customer drop column postcode;
 alter table customer drop column citycode;
 alter table customer drop column city;
 alter table customer drop column countrycode;
-alter table customer drop column geometry
+alter table customer drop column geometry;
 
 alter table site drop column location;
 alter table site drop column postcode;
