@@ -11,6 +11,12 @@ BEGIN
   DECLARE _page INTEGER DEFAULT 1;
   DECLARE _custId INTEGER;
   DECLARE _filter JSON ;
+  DECLARE _housenumber TEXT;
+  DECLARE _streettype TEXT;
+  DECLARE _street TEXT;
+  DECLARE _city TEXT;
+  DECLARE _postcode TEXT;
+
   DECLARE _i TINYINT(6) unsigned DEFAULT 0;
 
   SELECT IFNULL(JSON_VALUE(_args, "$.page"), 1) INTO @_page;
@@ -19,6 +25,12 @@ BEGIN
 
   SELECT JSON_VALUE(_args, "$.custId") INTO _custId;
   SELECT JSON_EXTRACT(_args, "$.filter") INTO _filter;
+
+  SELECT JSON_VALUE(_args, "$.street") INTO _street;
+  SELECT JSON_VALUE(_args, "$.housenumber") INTO _housenumber;
+  SELECT JSON_VALUE(_args, "$.streettype") INTO _streettype;
+  SELECT JSON_VALUE(_args, "$.city") INTO _city;
+  SELECT JSON_VALUE(_args, "$.postcode") INTO _postcode;
 
   SET @stm = "ORDER BY";
   IF JSON_TYPE(_filter) = 'ARRAY' AND JSON_LENGTH(_filter)>0 THEN 
@@ -50,6 +62,7 @@ BEGIN
     a.city,
     a.postcode,
     a.additional,
+    s.ctime,
     JSON_OBJECT(
       'id', c.id,
       'custId', c.id,
@@ -67,7 +80,13 @@ BEGIN
     INNER JOIN `address` ca ON c.addressId=ca.id
     LEFT JOIN gender g ON g.id=c.gender
     LEFT JOIN companyClass cc ON c.type = cc.id    
-  WHERE IF(_custId IS NULL, 1, s.custId=_custId);
+  WHERE 
+    IF(_housenumber IS NULL, 1, a.housenumber REGEXP _housenumber) AND
+    IF(_streettype IS NULL, 1, a.streettype REGEXP _streettype) AND
+    IF(_street IS NULL, 1, a.streetname REGEXP _street) AND
+    IF(_city IS NULL, 1, a.city  REGEXP _city) AND
+    IF(_postcode IS NULL, 1, a.postcode=_postcode) AND 
+    IF(_custId IS NULL, 1, s.custId=_custId);
 
   ALTER TABLE _site MODIFY customer JSON;
 

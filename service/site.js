@@ -43,39 +43,18 @@ class Site extends Entity {
     this.output.list(data);
   }
 
-  /**
-   * 
-   */
-  // async add_poc() {
-  //   let args = this.input.get('args');
-  //   let data;
-  //   if (args.pocId && args.custId && args.siteId) {
-  //     if (args.lastname) {
-  //       data = await this.db.await_proc('poc_update', args);
-  //     }
-  //     data = await this.db.await_proc('site_add_poc', args);
-  //   } else {
-  //     let { pocId, custId, siteId } = await this.db.await_proc('poc_create', args);
-  //     if (pocId) {
-  //       data = await this.db.await_proc('site_add_poc', { pocId, custId, siteId });
-  //     }
-  //   }
-  //   this.output.data(data);
-  // }
 
   /**
    * 
    */
   async list() {
-    const custId = this.input.get('custId');
-    const siteId = this.input.get('siteId');
     const page = this.input.get(Attr.page);
-    const filter = this.input.get('filter');
-    let opt = { custId, page, siteId };
-    if (filter) opt.filter = filter;
-    this.debug("AAA:76", JSON.stringify(opt))
-    let data = await this.db.await_proc('site_list', opt);
-    this.debug("AAA:76", data)
+    const args = this.input.get('args') || {};
+    if (page) args.page = page;
+    if (!args.filter && args.sort_by) {
+      args.filter = [{ name: args.sort_by, value: args.order || "desc" }]
+    }
+    let data = await this.db.await_proc('site_list', args);
     this.output.list(data);
   }
 
@@ -91,7 +70,7 @@ class Site extends Entity {
     if (words !== '^.*$') {
       words = `(?i)${words}`
     }
-    
+
     let data = await this.db.await_proc('site_search',
       { words, sort_by, order, page, custId });
     this.output.list(data);
