@@ -62,7 +62,7 @@ BEGIN
     IF(_streettype IS NULL, 1, a.streettype REGEXP _streettype) AND
     IF(_street IS NULL, 1, a.streetname REGEXP _street) AND
     IF(_city IS NULL, 1, a.city  REGEXP _city) AND
-    IF(_postcode IS NULL, 1, a.postcode=_postcode) 
+    IF(_postcode IS NULL, 1, a.postcode REGEXP _postcode) 
 
   ORDER BY 
     CASE WHEN LCASE(_sort_by) = 'name' and LCASE(_order) = 'asc' THEN custName END ASC,
