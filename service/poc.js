@@ -26,12 +26,6 @@ class Poc extends Entity {
    * 
    */
   async list() {
-    // const custId = this.input.get('custId');
-    // const siteId = this.input.get('siteId');
-    // const page = this.input.get(Attr.page) || 1;
-    // const filter = this.input.get('filter');
-    // let opt = { custId, page };
-    // if (filter) opt.filter = filter;
     let page = this.input.get(Attr.page)
     let args = this.input.get('args')
     this.debug("AAA:36 list", JSON.stringify({ page, ...args }))

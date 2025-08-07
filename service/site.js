@@ -54,6 +54,7 @@ class Site extends Entity {
     if (!args.filter && args.sort_by) {
       args.filter = [{ name: args.sort_by, value: args.order || "desc" }]
     }
+    this.debug("AAA:41", JSON.stringify(args))
     let data = await this.db.await_proc('site_list', args);
     this.output.list(data);
   }
@@ -82,7 +83,6 @@ class Site extends Entity {
   async transfer() {
     const id = this.input.get(Attr.id);
     const custId = this.input.get('custId');
-    this.debug("AAA:18", { id, custId })
     let data = await this.db.await_proc('site_transfer', id, custId);
     this.output.list(data);
   }

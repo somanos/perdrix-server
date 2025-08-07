@@ -213,7 +213,7 @@ class PerdrixUtils extends Entity {
         let { features } = data || {};
         resolve(features);
       }).catch((e) => {
-        this.warn("Failed to get data from ", { words, url }, e.statusMessage);
+        this.warn("Failed to get data from ", { words, url }, e, e.statusMessage);
         resolve([]);
       });
     })

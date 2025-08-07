@@ -94,6 +94,7 @@ class Work extends Entity {
   */
   async update() {
     let args = this.input.get('args');
+    this.debug("AAAA:97", args)
     let data = await this.db.await_proc('work_update', args);
     this.output.data(data);
   }

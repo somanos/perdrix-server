@@ -11,6 +11,8 @@ BEGIN
     c.id custId, 
     a.id addressId,
     normalize_name(c.category, c.company, c.lastname, c.firstname) custName,
+    c.lastname,
+    c.firstname,
     c.ctime,
     c.category,
     cc.tag companyclass,

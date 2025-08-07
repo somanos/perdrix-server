@@ -18,7 +18,6 @@ BEGIN
   DECLARE _city VARCHAR(512);
   DECLARE _countrycode VARCHAR(512);
   DECLARE _reference JSON;
-  DECLARE _location JSON;
   DECLARE _geometry JSON;
 
   SELECT IFNULL(JSON_VALUE(_args, "$.housenumber"), "") INTO _housenumber;
@@ -37,13 +36,9 @@ BEGIN
 
   SELECT JSON_EXTRACT(_args, "$.geometry") INTO _geometry;
 
-  SELECT JSON_ARRAY(
-    _housenumber, _streettype, _streetname, _additional, "", ""
-  ) INTO _location;
-
   SELECT id FROM country WHERE code=_countrycode INTO _ccode;
 
-  SELECT address_get_id(_location, _postcode, _ccode) INTO _addressId;
+  SELECT address_get_id(_housenumber, _streettype, _streetname, _additional, _postcode, _ccode) INTO _addressId;
 
   IF _addressId IS NULL THEN
     SELECT id FROM country WHERE code=_countrycode INTO _ccode;

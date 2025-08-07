@@ -15,6 +15,14 @@ BEGIN
   DECLARE _order VARCHAR(20) DEFAULT 'desc';
   DECLARE _phones TEXT;
 
+  DECLARE _filter JSON ;
+  DECLARE _housenumber TEXT;
+  DECLARE _streettype TEXT;
+  DECLARE _street TEXT;
+  DECLARE _city TEXT;
+  DECLARE _postcode TEXT;
+  DECLARE _pocName TEXT;
+
   SELECT IFNULL(JSON_VALUE(_args, "$.order"), 'asc') INTO _order;
   SELECT IFNULL(JSON_VALUE(_args, "$.type"), 'site') INTO _type;
   SELECT IFNULL(JSON_VALUE(_args, "$.page"), 1) INTO _page;
@@ -23,6 +31,14 @@ BEGIN
   SELECT JSON_VALUE(_args, "$.lastname") INTO _lastname;
   SELECT JSON_VALUE(_args, "$.addressId") INTO _addressId;
   SELECT JSON_VALUE(_args, "$.phones") INTO _phones;
+
+  SELECT JSON_EXTRACT(_args, "$.filter") INTO _filter;
+  SELECT JSON_VALUE(_args, "$.street") INTO _street;
+  SELECT JSON_VALUE(_args, "$.housenumber") INTO _housenumber;
+  SELECT JSON_VALUE(_args, "$.streettype") INTO _streettype;
+  SELECT JSON_VALUE(_args, "$.city") INTO _city;
+  SELECT JSON_VALUE(_args, "$.postcode") INTO _postcode;
+  SELECT IFNULL(JSON_VALUE(_args, "$.pocName"), '.+') INTO _pocName;
 
   CALL yp.pageToLimits(_page, _offset, _range);
   DROP TABLE IF EXISTS _view;
@@ -80,13 +96,17 @@ BEGIN
       INNER JOIN `address` a ON m.addressId=a.id
       LEFT JOIN gender g ON p.gender=g.id 
       WHERE 
-        IF (_lastname IS NULL, 1, p.lastname REGEXP _lastname) AND
-        IF (_addressId IS NULL, 1, m.addressId=_addressId) ORDER BY
-        CASE WHEN LCASE(_order) = 'asc' THEN lastname END ASC,
-        CASE WHEN LCASE(_order) = 'desc' THEN lastname END DESC
+        IF (_pocName IS NULL, 1, p.lastname REGEXP _pocName) AND
+        IF (_addressId IS NULL, 1, m.addressId=_addressId) AND
+        IF(_housenumber IS NULL, 1, a.housenumber REGEXP _housenumber) AND
+        IF(_streettype IS NULL, 1, a.streettype REGEXP _streettype) AND
+        IF(_street IS NULL, 1, a.streetname REGEXP _street) AND
+        IF(_city IS NULL, 1, a.city  REGEXP _city) AND
+        IF(_postcode IS NULL, 1, a.postcode=_postcode) 
+        ORDER BY 
+          CASE WHEN LCASE(_order) = 'asc' THEN lastname END ASC,
+          CASE WHEN LCASE(_order) = 'desc' THEN lastname END DESC
         LIMIT _offset ,_range;
-    -- UPDATE _view v INNER JOIN poc_map m ON m.pocId=v.pocId 
-    --   SET v.addressId=m.addressId;
   ELSE
     SELECT
       p.id,
@@ -110,7 +130,7 @@ BEGIN
         'custId', c.id,
         'gender', g.shortTag,
         'companyclass', cc.tag,
-        'custName', normalize_name(c.category, c.company, c.lastname, c.firstname),
+        'pocName', normalize_name(c.category, c.company, c.lastname, c.firstname),
         'location', a.location,
         'geometry', a.geometry,
         'city', a.city,
@@ -125,34 +145,17 @@ BEGIN
       WHERE 
         IF (_lastname IS NULL, 1, p.lastname REGEXP _lastname) AND
         IF(_phones IS NULL, 1, p.phones REGEXP _phones) AND
-        IF (_addressId IS NULL, 1, m.addressId=_addressId) ORDER BY
-        CASE WHEN LCASE(_order) = 'asc' THEN lastname END ASC,
-        CASE WHEN LCASE(_order) = 'desc' THEN lastname END DESC
+        IF (_addressId IS NULL, 1, m.addressId=_addressId) AND
+        IF(_housenumber IS NULL, 1, a.housenumber REGEXP _housenumber) AND
+        IF(_streettype IS NULL, 1, a.streettype REGEXP _streettype) AND
+        IF(_street IS NULL, 1, a.streetname REGEXP _street) AND
+        IF(_city IS NULL, 1, a.city  REGEXP _city) AND
+        IF(_postcode IS NULL, 1, a.postcode=_postcode) 
+        ORDER BY 
+          CASE WHEN LCASE(_order) = 'asc' THEN lastname END ASC,
+          CASE WHEN LCASE(_order) = 'desc' THEN lastname END DESC
       LIMIT _offset ,_range;
-    -- UPDATE _view v INNER JOIN poc_map m ON m.pocId=v.pocId 
-    --   SET v.addressId=m.addressId;
   END IF;
-
-  -- SELECT v.*,
-  --   JSON_OBJECT(
-  --     'id', c.id,
-  --     'custId', c.id,
-  --     'gender', g.shortTag,
-  --     'companyclass', cc.tag,
-  --     'custName', normalize_name(c.category, c.company, c.lastname, c.firstname),
-  --     'location', ca.location,
-  --     'geometry', ca.geometry,
-  --     'city', ca.city,
-  --     'postcode', ca.postcode
-  --   ) customer 
-  -- FROM _view v 
-  -- INNER JOIN customer c ON c.id=v.custId
-  -- INNER JOIN `address` ca ON c.addressId=ca.id
-  -- LEFT JOIN gender g ON g.id=c.gender
-  -- LEFT JOIN companyClass cc ON c.type = cc.id
-  -- WHERE IF (_addressId IS NULL, 1, v.addressId=_addressId) ORDER BY
-  --   CASE WHEN LCASE(_order) = 'asc' THEN v.lastname END ASC,
-  --   CASE WHEN LCASE(_order) = 'desc' THEN v.lastname END DESC;
 END$
 
 
