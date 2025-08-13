@@ -4,6 +4,55 @@ const {
 } = require('@drumee/server-essentials');
 
 class Customer extends Entity {
+  /**
+   * 
+   */
+  async merge() {
+    const {
+      srcId,
+      destId,
+    } = this.input.data()
+    this.debug("AAA:17", srcId, destId)
+    let res = await this.db.await_proc('address_merge', srcId, destId)
+    this.output.data(res);
+  }
+
+  /**
+   * 
+   */
+  async modify() {
+    let args = this.input.get('args')
+    const {
+      housenumber,
+      streettype,
+      streetname,
+      additional,
+      postcode,
+      addressId,
+      countrycode
+    } = args
+    this.debug("AAA:17", addressId, housenumber, streettype, streetname, additional, postcode, countrycode)
+    let id = await this.db.await_func('address_get_id',
+      housenumber, streettype, streetname, additional, postcode, countrycode
+    );
+    let res = {}
+    if (id) {
+      if (addressId == id) {
+        args.id = id;
+        res = await this.db.await_proc('address_modify', args)
+      } else {
+        let dest = await this.db.await_proc('address_get', id)
+        let src = await this.db.await_proc('address_get', addressId)
+        this.output.data({ src, dest });
+        return
+      }
+    } else {
+      this.debug(`AAA:26 -- update on ${addressId}`)
+      args.id = addressId;
+      res = await this.db.await_proc('address_modify', args)
+    }
+    this.output.data(res);
+  }
 
   /**
    * 

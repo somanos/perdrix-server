@@ -8,14 +8,16 @@ CREATE FUNCTION `address_get_id`(
   _streetname VARCHAR(200),
   _additional VARCHAR(200),
   _postcode VARCHAR(200),
-  _countrycode INTEGER
+  _countrycode VARCHAR(200)
 )
 RETURNS INTEGER DETERMINISTIC
 BEGIN
   DECLARE _id INTEGER;
+  DECLARE _ccode INTEGER DEFAULT 36;
+  SELECT IFNULL(id, 36) FROM country WHERE code=_countrycode INTO _ccode;
   SELECT id FROM address WHERE 
     postcode    = _postcode AND 
-    countrycode = _countrycode AND 
+    countrycode = _ccode AND 
     housenumber = _housenumber AND
     streettype  = _streettype AND
     streetname  = _streetname AND

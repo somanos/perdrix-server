@@ -18,8 +18,8 @@ BEGIN
   DECLARE _postcode TEXT;
 
   
-  SELECT IFNULL(JSON_VALUE(_args, "$.sort_by"), 'name') INTO _sort_by;
-  SELECT IFNULL(JSON_VALUE(_args, "$.order"), 'asc') INTO _order;
+  SELECT IFNULL(JSON_VALUE(_args, "$.sort_by"), 'ctime') INTO _sort_by;
+  SELECT IFNULL(JSON_VALUE(_args, "$.order"), 'desc') INTO _order;
   SELECT IFNULL(JSON_VALUE(_args, "$.page"), 1) INTO _page;
   SELECT IFNULL(JSON_VALUE(_args, "$.pagelength"), 45) INTO @rows_per_page;
   SELECT JSON_VALUE(_args, "$.street") INTO _street;

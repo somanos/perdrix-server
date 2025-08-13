@@ -5,6 +5,18 @@
       "permission": {
         "src": "read"
       }
+    },
+    "merge": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
+    },
+    "modify": {
+      "scope": "hub",
+      "permission": {
+        "src": "write"
+      }
     }
  },
   "modules": {

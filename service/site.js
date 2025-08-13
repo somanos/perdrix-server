@@ -33,8 +33,8 @@ class Site extends Entity {
   }
 
   /**
- * 
- */
+   * 
+   */
   async list_poc() {
     const siteId = this.input.get('siteId');
     const page = this.input.get(Attr.page) || 1;

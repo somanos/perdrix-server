@@ -41,7 +41,6 @@ BEGIN
   SELECT address_get_id(_housenumber, _streettype, _streetname, _additional, _postcode, _ccode) INTO _addressId;
 
   IF _addressId IS NULL THEN
-    SELECT id FROM country WHERE code=_countrycode INTO _ccode;
 
     REPLACE INTO address
       (
