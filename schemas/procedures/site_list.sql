@@ -34,22 +34,6 @@ BEGIN
   SELECT JSON_VALUE(_args, "$.postcode") INTO _postcode;
   SELECT IFNULL(JSON_VALUE(_args, "$.custName"), '.+') INTO _custName;
 
-  -- SET @stm = "ORDER BY";
-  -- IF JSON_TYPE(_filter) = 'ARRAY' AND JSON_LENGTH(_filter)>0 THEN 
-  --   WHILE _i < JSON_LENGTH(_filter) DO 
-  --     SELECT JSON_EXTRACT(_filter, CONCAT("$[", _i, "]")) INTO @r;
-  --     SELECT JSON_VALUE(@r, "$.name") INTO @_name;
-  --     SELECT JSON_VALUE(@r, "$.value") INTO @_value;
-  --     SELECT CONCAT(@stm, " ", @_name, " ", @_value) INTO @stm;
-  --     IF(_i < JSON_LENGTH(_filter) - 1) THEN
-  --       SELECT CONCAT(@stm, ",") INTO @stm;
-  --     END IF;
-  --     SELECT _i + 1 INTO _i;
-  --   END WHILE;
-  -- ELSE
-  --   SELECT CONCAT(@stm, " ", "city asc, street asc, housenumber desc") INTO @stm;
-  -- END IF;
-
   DROP TABLE IF EXISTS `_site`;
   CREATE TEMPORARY TABLE _site AS SELECT 
     @_page page,
@@ -90,7 +74,8 @@ BEGIN
     IF(_street IS NULL, 1, a.streetname REGEXP _street) AND
     IF(_city IS NULL, 1, a.city  REGEXP _city) AND
     IF(_postcode IS NULL, 1, a.postcode REGEXP _postcode) AND 
-    IF(_custId IS NULL, 1, s.custId=_custId);
+    IF(_custId IS NULL, 1, s.custId=_custId)
+    LIMIT _offset ,_range;
 
   ALTER TABLE _site MODIFY customer JSON;
 

@@ -58,13 +58,12 @@ class Customer extends Entity {
    * 
    */
   async list() {
-    const sort_by = this.input.get(Attr.sort_by) || 'street';
-    const order = this.input.get(Attr.order) || 'asc';
+    const filter = this.input.get('filter') || 'street';
     const page = this.input.get(Attr.page);
     let city = this.input.get('city');
     let street = this.input.get('street');
     let s;
-    let args = { city, street, sort_by, order, page };
+    let args = { city, street, filter, page };
     if (street) {
       s = street.split(/[ ,]+/);
       if (/[0-9]+/.test(s[0])) {
