@@ -19,6 +19,13 @@ BEGIN
   DECLARE _siteId INTEGER ;
   DECLARE _status BOOLEAN ;
   DECLARE _words TEXT;
+  DECLARE _housenumber TEXT;
+  DECLARE _streettype TEXT;
+  DECLARE _street TEXT;
+  DECLARE _city TEXT;
+  DECLARE _postcode TEXT;
+  DECLARE _custName TEXT;
+
   DECLARE _i TINYINT(6) unsigned DEFAULT 0;
 
 
@@ -27,6 +34,13 @@ BEGIN
   SELECT IFNULL(JSON_VALUE(_args, "$.page"), 1) INTO _page;
   SELECT IFNULL(JSON_VALUE(_args, "$.pagelength"), 45) INTO @rows_per_page;  
   SELECT IFNULL(JSON_VALUE(_args, "$.fiscalYear"), 0) INTO _fiscalYear;
+
+  SELECT JSON_VALUE(_args, "$.street") INTO _street;
+  SELECT JSON_VALUE(_args, "$.housenumber") INTO _housenumber;
+  SELECT JSON_VALUE(_args, "$.streettype") INTO _streettype;
+  SELECT JSON_VALUE(_args, "$.city") INTO _city;
+  SELECT JSON_VALUE(_args, "$.postcode") INTO _postcode;
+  SELECT IFNULL(JSON_VALUE(_args, "$.custName"), '.+') INTO _custName;
 
   SELECT JSON_VALUE(_args, "$.custId") INTO _custId;
   SELECT JSON_VALUE(_args, "$.siteId") INTO _siteId;
@@ -45,6 +59,7 @@ BEGIN
     _page `page`,
     JSON_OBJECT(
       'custId', w.custId,
+      'addressId', a.id,
       'countrycode', a.countrycode,
       'location', a.location,
       'postcode', a.postcode,
@@ -57,6 +72,7 @@ BEGIN
     ) `site`,
     JSON_OBJECT(
       'custId', w.custId,
+      'addressId', ca.id,
       'custName', normalize_name(c.category, c.company, c.lastname, c.firstname),
       'countrycode', ca.countrycode,
       'location', ca.location,
@@ -72,6 +88,12 @@ BEGIN
     INNER JOIN `address` a ON s.addressId=a.id
     LEFT JOIN `workType` t ON t.id=w.category
     WHERE 
+      IF(_custName IS NULL, 1, normalize_name(c.category, c.company, c.lastname, c.firstname) REGEXP _custName) AND
+      IF(_housenumber IS NULL, 1, a.housenumber REGEXP _housenumber) AND
+      IF(_streettype IS NULL, 1, a.streettype REGEXP _streettype) AND
+      IF(_street IS NULL, 1, a.streetname REGEXP _street) AND
+      IF(_city IS NULL, 1, a.city  REGEXP _city) AND
+      IF(_postcode IS NULL, 1, a.postcode REGEXP _postcode) AND 
       IF(_custId IS NULL, 1, w.custId=_custId) AND 
       IF(_siteId IS NULL, 1, b.siteId=_siteId) AND
       IF(_fiscalYear REGEXP "^ *([0-9]{4,4}) *$", fiscalYear=_fiscalYear, 1) AND
