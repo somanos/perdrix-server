@@ -15,7 +15,7 @@ BEGIN
   DECLARE _page INTEGER DEFAULT 1;
   DECLARE _addressId INTEGER ;
   DECLARE _custId INTEGER ;
-  DECLARE _fiscalYear INTEGER ;
+  DECLARE _year INTEGER ;
   DECLARE _siteId INTEGER ;
   DECLARE _status JSON ;
   DECLARE _words TEXT;
@@ -25,6 +25,8 @@ BEGIN
   DECLARE _city TEXT;
   DECLARE _postcode TEXT;
   DECLARE _custName TEXT;
+  DECLARE _description TEXT;
+  DECLARE _chrono TEXT;
 
   DECLARE _i TINYINT(6) unsigned DEFAULT 0;
 
@@ -33,7 +35,7 @@ BEGIN
   SELECT IFNULL(JSON_VALUE(_args, "$.order"), 'asc') INTO _order;
   SELECT IFNULL(JSON_VALUE(_args, "$.page"), 1) INTO _page;
   SELECT IFNULL(JSON_VALUE(_args, "$.pagelength"), 45) INTO @rows_per_page;  
-  SELECT IFNULL(JSON_VALUE(_args, "$.fiscalYear"), 0) INTO _fiscalYear;
+  SELECT IFNULL(JSON_VALUE(_args, "$.year"), 0) INTO _year;
 
   SELECT JSON_VALUE(_args, "$.street") INTO _street;
   SELECT JSON_VALUE(_args, "$.housenumber") INTO _housenumber;
@@ -41,6 +43,8 @@ BEGIN
   SELECT JSON_VALUE(_args, "$.city") INTO _city;
   SELECT JSON_VALUE(_args, "$.postcode") INTO _postcode;
   SELECT IFNULL(JSON_VALUE(_args, "$.custName"), '.+') INTO _custName;
+  SELECT JSON_VALUE(_args, "$.description") INTO _description;
+  SELECT JSON_VALUE(_args, "$.chrono") INTO _chrono;
 
   SELECT JSON_VALUE(_args, "$.custId") INTO _custId;
   SELECT JSON_VALUE(_args, "$.siteId") INTO _siteId;
@@ -49,6 +53,18 @@ BEGIN
 
   SELECT id FROM yp.entity WHERE db_name=database() INTO _hub_id;
 
+  IF _description IS NOT NULL THEN 
+    SELECT REGEXP_REPLACE(_description, "[ \*]+", '.+') INTO _description;
+  END IF;
+
+  IF _street IS NOT NULL THEN 
+    SELECT REGEXP_REPLACE(_street, "[ \*]+", '.+') INTO _street;
+  END IF;
+
+  IF _custName IS NOT NULL THEN 
+    SELECT REGEXP_REPLACE(_custName, "[ \*]+", '.+') INTO _custName;
+  END IF;
+  
   SELECT
     q.*,
     a.id addressId,
@@ -94,8 +110,10 @@ BEGIN
       IF(_postcode IS NULL, 1, a.postcode REGEXP _postcode) AND 
       IF(_custId IS NULL, 1, w.custId=_custId) AND 
       IF(_siteId IS NULL, 1, q.siteId=_siteId) AND
-      IF(_fiscalYear REGEXP "^ *([0-9]{4,4}) *$", fiscalYear=_fiscalYear, 1) AND
-      IF (_addressId IS NULL, 1, a.id=_addressId) 
+      IF(_year REGEXP "^ *([0-9]{4,4}) *$", fiscalYear=_year, 1) AND
+      IF(_description IS NULL, 1, yp.strip_accents(q.description) REGEXP yp.strip_accents(_description)) AND
+      IF(_chrono IS NULL, 1, q.chrono REGEXP _chrono) AND
+      IF(_addressId IS NULL, 1, a.id=_addressId) 
     ORDER BY q.ctime DESC
     LIMIT _offset ,_range;
 END$

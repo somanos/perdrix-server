@@ -18,6 +18,12 @@
         "src": "write"
       }
     },
+    "read": {
+      "scope": "hub",
+      "permission": {
+        "src": "read"
+      }
+    },
     "balance": {
       "scope": "hub",
       "permission": {

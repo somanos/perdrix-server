@@ -70,8 +70,6 @@ class Sales extends DrumeeMfs {
       return this.not_fount(template_file)
     }
 
-    console.log("AAA:29", { custom_tpl, nid, template, template_file, args }, join(custom_tpl, template));
-
     let time = new Date().toLocaleString(locale);
     let [day, hour] = time.split(/ +/);
 
@@ -150,12 +148,11 @@ class Sales extends DrumeeMfs {
   /**
   * 
   */
-  async list(type) {
-    let args = this.input.get('args');
+  async list(type, args) {
+    args = args || this.input.get('args');
     if (args.fiscalYear && !/[0-9]{4,4}/.test(args.fiscalYear)) {
       delete args.fiscalYear;
     }
-
     let data = await this.db.await_proc(`${type}_list`, args);
     this.output.list(data);
   }

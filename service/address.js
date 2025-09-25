@@ -12,7 +12,6 @@ class Customer extends Entity {
       srcId,
       destId,
     } = this.input.data()
-    this.debug("AAA:17", srcId, destId)
     let res = await this.db.await_proc('address_merge', srcId, destId)
     this.output.data(res);
   }
@@ -31,7 +30,6 @@ class Customer extends Entity {
       addressId,
       countrycode
     } = args
-    this.debug("AAA:17", addressId, housenumber, streettype, streetname, additional, postcode, countrycode)
     let id = await this.db.await_func('address_get_id',
       housenumber, streettype, streetname, additional, postcode, countrycode
     );
@@ -47,7 +45,6 @@ class Customer extends Entity {
         return
       }
     } else {
-      this.debug(`AAA:26 -- update on ${addressId}`)
       args.id = addressId;
       res = await this.db.await_proc('address_modify', args)
     }
@@ -85,7 +82,6 @@ class Customer extends Entity {
         args.street = s.join(' ');
       }
     }
-    this.debug("AAA:17", JSON.stringify(args))
     let data = await this.db.await_proc('address_list', args);
     this.output.list(data);
   }
