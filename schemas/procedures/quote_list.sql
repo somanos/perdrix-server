@@ -51,6 +51,7 @@ BEGIN
 
   SELECT JSON_VALUE(_args, "$.custId") INTO _custId;
   SELECT JSON_VALUE(_args, "$.siteId") INTO _siteId;
+  SELECT JSON_VALUE(_args, "$.uid") INTO _uid;
   SELECT JSON_VALUE(_args, "$.addressId") INTO _addressId;
   CALL yp.pageToLimits(_page, _offset, _range);
 

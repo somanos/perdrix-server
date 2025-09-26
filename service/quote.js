@@ -30,12 +30,13 @@ class Quote extends Sales {
     for (let name of ['ht', 'ttc', 'tva', 'discount']) {
       args[name] = args[name] || 0;
     }
-
+    args.uid = this.uid;
     let quote = await this.db.await_proc('quote_create', args);
     if (!quote || !quote.custId || !quote.chrono) {
       this.exception.server("QUOTE_FAILED");
       return
     }
+    this.debug("AAA:39", quote)
     let customer = await this.db.await_proc('customer_get', quote.custId);
     quote = { ...customer, ...quote };
     let data = await this.writeTemplate(quote, {
@@ -54,7 +55,7 @@ class Quote extends Sales {
       node = await this.store(data)
     }
     await this.db.await_proc('quote_update', { docId: node.nid, id: quote.id });
-    let work = await this.db.await_proc('work_details', quote.workId);
+    let work = await this.db.await_proc('work_details', { id: quote.workId, uid: this.uid });
     this.output.data(work);
   }
 
@@ -63,7 +64,7 @@ class Quote extends Sales {
    */
   async read() {
     const quoteId = this.input.get(Attr.id) || 0;
-    let data = await this.db.await_proc('quote_get', quoteId);
+    let data = await this.db.await_proc('quote_get', quoteId, this.uid);
     this.output.data(data);
   }
 

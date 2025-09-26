@@ -14,6 +14,7 @@ BEGIN
   DECLARE _discount DOUBLE;
   DECLARE _docId VARCHAR(200);
   DECLARE _status INTEGER;
+  DECLARE _uid VARCHAR(20);
 
   SELECT JSON_VALUE(_args, "$.id") INTO _id;
   SELECT JSON_VALUE(_args, "$.description") INTO _description;
@@ -23,6 +24,7 @@ BEGIN
   SELECT JSON_VALUE(_args, "$.discount") INTO _discount;
   SELECT JSON_VALUE(_args, "$.docId") INTO _docId;
   SELECT JSON_VALUE(_args, "$.status") INTO _status;
+  SELECT JSON_VALUE(_args, "$.uid") INTO _uid;
 
   UPDATE quote SET `description`=_description WHERE id=_id AND _description IS NOT NULL;
   UPDATE quote SET `ht`=_ht WHERE id=_id AND _ht IS NOT NULL;
@@ -37,7 +39,7 @@ BEGIN
     'table', 'quote'
   ));
 
-  CALL quote_get(_id);
+  CALL quote_get(_id, _uid);
 END$
 
 DELIMITER ;

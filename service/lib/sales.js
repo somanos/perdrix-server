@@ -153,6 +153,7 @@ class Sales extends DrumeeMfs {
     if (args.fiscalYear && !/[0-9]{4,4}/.test(args.fiscalYear)) {
       delete args.fiscalYear;
     }
+    args.uid = this.uid;
     let data = await this.db.await_proc(`${type}_list`, args);
     this.output.list(data);
   }
@@ -187,6 +188,7 @@ class Sales extends DrumeeMfs {
   */
   async update(type) {
     const args = this.input.get('args');
+    args.uid = this.uid;
     let data = await this.db.await_proc(`${type}_update`, args);
     this.output.data(data);
   }

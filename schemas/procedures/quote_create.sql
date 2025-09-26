@@ -17,6 +17,7 @@ BEGIN
   DECLARE _discount DOUBLE;
   DECLARE _chrono VARCHAR(200);
   DECLARE _site JSON;
+  DECLARE _uid VARCHAR(20);
 
   SELECT IFNULL(JSON_VALUE(_args, "$.custId"), 0) INTO _custId;
   SELECT IFNULL(JSON_VALUE(_args, "$.siteId"), 0) INTO _siteId;
@@ -27,6 +28,7 @@ BEGIN
   SELECT JSON_VALUE(_args, "$.tva") INTO _tva;
   SELECT JSON_VALUE(_args, "$.ttc") INTO _ttc;
   SELECT JSON_VALUE(_args, "$.discount") INTO _discount;
+  SELECT JSON_VALUE(_args, "$.uid") INTO _uid;
 
   SELECT JSON_EXTRACT(_args, "$.site") INTO _site;
 
@@ -105,7 +107,7 @@ BEGIN
     'id', _id,
     'table', 'note'
   ));
-  CALL quote_get(_id);
+  CALL quote_get(_id, _uid);
 END$
 
 DELIMITER ;

@@ -22,6 +22,7 @@ BEGIN
   DECLARE _email VARCHAR(512);
   DECLARE _city VARCHAR(512) DEFAULT "";
   DECLARE _streetname VARCHAR(512) DEFAULT "";
+  DECLARE _uid VARCHAR(20);
 
   DECLARE _phones JSON;
   DECLARE _reference JSON;
@@ -38,6 +39,7 @@ BEGIN
   SELECT IFNULL(JSON_VALUE(_args, "$.home"), "") INTO _home;
   SELECT IFNULL(JSON_VALUE(_args, "$.office"), "") INTO _office;
   SELECT IFNULL(JSON_VALUE(_args, "$.fax"), "") INTO _fax;
+  SELECT JSON_VALUE(_args, "$.uid") INTO _uid;
 
   SELECT JSON_ARRAY(
     _office, _home, _mobile, _fax
@@ -110,7 +112,7 @@ BEGIN
     CALL seo_index(_streetname, 'site_streetName', _reference);
   END IF;
 
-  CALL poc_get(_id);
+  CALL poc_get(_id, _uid);
 END$
 
 DELIMITER ;

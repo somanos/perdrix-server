@@ -10,7 +10,7 @@ class Poc extends Entity {
   async create() {
     let args = this.input.get('args')
     let note = await this.db.await_proc('note_create', args);
-    let work = await this.db.await_proc('work_details', note.workId);
+    let work = await this.db.await_proc('work_details', { id: note.workId, uid: this.uid });
     this.output.data(work);
   }
 

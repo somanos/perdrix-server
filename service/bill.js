@@ -38,7 +38,7 @@ class Bill extends Sales {
       node = await this.store(data)
     }
     await this.db.await_proc('bill_update', { docId: node.nid, id: bill.id });
-    let work = await this.db.await_proc('work_details', bill.workId);
+    let work = await this.db.await_proc('work_details', { id: bill.workId, uid: this.uid });
     this.output.data(work);
   }
 
