@@ -33,6 +33,21 @@ BEGIN
   SELECT JSON_VALUE(_args, "$.addressId") INTO _addressId;
   CALL yp.pageToLimits(_page, _offset, _range);  
 
+  IF _city IS NOT NULL THEN 
+    SELECT yp.strip_accents(_city) INTO _city;
+    SELECT REGEXP_REPLACE(_city, "[ \*]+", '.+') INTO _city;
+  END IF;
+
+  IF _street IS NOT NULL THEN 
+    SELECT yp.strip_accents(_street) INTO _street;
+    SELECT REGEXP_REPLACE(_street, "[ \*]+", '.+') INTO _street;
+  END IF;
+
+  IF _custName IS NOT NULL THEN 
+    SELECT yp.strip_accents(_custName) INTO _custName;
+    SELECT REGEXP_REPLACE(_custName, "[ \*]+", '.+') INTO _custName;
+  END IF;
+  
   SELECT 
     c.id custId, 
     a.id addressId,
@@ -55,13 +70,13 @@ BEGIN
   FROM customer c
     LEFT JOIN companyClass cc ON c.type = cc.id
     INNER JOIN `address` a ON c.addressId=a.id
-    LEFT JOIN gender g ON c.gender = g.id HAVING 
-    IF(_custName IS NULL, 1, `custName` REGEXP _custName) AND
+    LEFT JOIN gender g ON c.gender = g.id WHERE
+    IF(_custName IS NULL, 1, yp.strip_accents(normalize_name(c.category, c.company, c.lastname, c.firstname)) REGEXP _custName) AND
     IF(_addressId IS NULL, 1, addressId=_addressId) AND
     IF(_housenumber IS NULL, 1, a.housenumber REGEXP _housenumber) AND
     IF(_streettype IS NULL, 1, a.streettype REGEXP _streettype) AND
-    IF(_street IS NULL, 1, a.streetname REGEXP _street) AND
-    IF(_city IS NULL, 1, a.city  REGEXP _city) AND
+    IF(_street IS NULL, 1, yp.strip_accents(a.streetname) REGEXP _street) AND
+    IF(_city IS NULL, 1, yp.strip_accents(a.city) REGEXP _city) AND
     IF(_postcode IS NULL, 1, a.postcode REGEXP _postcode) 
 
   ORDER BY 

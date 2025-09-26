@@ -81,7 +81,6 @@ class Quote extends Sales {
    */
   async list() {
     let args = this.input.get('args');
-    this.debug("AAA:80", args)
     if (args.address) {
       let words = args.address.replace(/ +/g, '+');
       let features = await this._search_location(words)
@@ -120,7 +119,6 @@ class Quote extends Sales {
         }
         if (stop) break;
       }
-      this.debug("AAA:83", args)
     }
     return super.list('quote', args)
   }

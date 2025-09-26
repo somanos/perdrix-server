@@ -12,11 +12,11 @@ class Customer extends Entity {
     let args = this.input.get('args');
     this.debug('AAA:49', JSON.stringify(args));
     let data;
-    if(!args.words || !args.words.length){
+    if (!args.words || !args.words.length) {
       data = await this.db.await_proc('customer_list', args);
       return this.output.list(data);
     }
-    if(args.words.length <=3){
+    if (args.words.length <= 3) {
       args.words = `^${args.words}`
     }
     data = await this.db.await_proc('customer_list', args);
@@ -81,7 +81,6 @@ class Customer extends Entity {
       { location, postcode, city });
     this.output.list(data);
   }
-
 
   /**
    * 

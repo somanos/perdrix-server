@@ -10,7 +10,6 @@ BEGIN
   DECLARE _offset bigint;
   DECLARE _sort_by VARCHAR(20) DEFAULT 'name';
   DECLARE _order VARCHAR(20) DEFAULT 'asc';
-  DECLARE _hub_id VARCHAR(20);
 
   DECLARE _page INTEGER DEFAULT 1;
   DECLARE _addressId INTEGER ;
@@ -27,6 +26,10 @@ BEGIN
   DECLARE _custName TEXT;
   DECLARE _description TEXT;
   DECLARE _chrono TEXT;
+  DECLARE _home_id VARCHAR(20);
+  DECLARE _hub_id VARCHAR(20);
+  DECLARE _uid VARCHAR(20);
+  DECLARE _privilege INTEGER ;
 
   DECLARE _i TINYINT(6) unsigned DEFAULT 0;
 
@@ -52,24 +55,40 @@ BEGIN
   CALL yp.pageToLimits(_page, _offset, _range);
 
   SELECT id FROM yp.entity WHERE db_name=database() INTO _hub_id;
+  SELECT id, home_id FROM yp.entity WHERE db_name=database() INTO _hub_id, _home_id;
 
   IF _description IS NOT NULL THEN 
+    SELECT yp.strip_accents(_description) INTO _description;
     SELECT REGEXP_REPLACE(_description, "[ \*]+", '.+') INTO _description;
   END IF;
 
   IF _street IS NOT NULL THEN 
+    SELECT yp.strip_accents(_street) INTO _street;
     SELECT REGEXP_REPLACE(_street, "[ \*]+", '.+') INTO _street;
   END IF;
 
   IF _custName IS NOT NULL THEN 
+    SELECT yp.strip_accents(_custName) INTO _custName;
     SELECT REGEXP_REPLACE(_custName, "[ \*]+", '.+') INTO _custName;
   END IF;
-  
+
+  IF _city IS NOT NULL THEN 
+    SELECT yp.strip_accents(_city) INTO _city;
+    SELECT REGEXP_REPLACE(_description, "[ \*]+", '.+') INTO _description;
+  END IF;
+  SELECT user_permission(_uid, _home_id) FROM media WHERE id=_home_id INTO _privilege;
   SELECT
     q.*,
     a.id addressId,
     t.tag `type`,
     t.tag `workType`,
+    m.id nid,
+    m.file_path filepath,
+    m.user_filename filename,
+    m.extension ext,
+    _privilege privilege,
+    _home_id home_id,
+    _hub_id hub_id,
     _page `page`,
     JSON_OBJECT(
       'custId', w.custId,
@@ -101,17 +120,18 @@ BEGIN
     INNER JOIN `address` ca ON c.addressId=ca.id
     INNER JOIN `address` a ON s.addressId=a.id
     LEFT JOIN `workType` t ON t.id=w.category
+    LEFT JOIN media m ON m.file_path=concat('/devis/',fiscalYear,'/odt/dev', q.chrono, '.odt')
     WHERE 
-      IF(_custName IS NULL, 1, normalize_name(c.category, c.company, c.lastname, c.firstname) REGEXP _custName) AND
+      IF(_custName IS NULL, 1, yp.strip_accents(normalize_name(c.category, c.company, c.lastname, c.firstname)) REGEXP _custName) AND
       IF(_housenumber IS NULL, 1, a.housenumber REGEXP _housenumber) AND
       IF(_streettype IS NULL, 1, a.streettype REGEXP _streettype) AND
-      IF(_street IS NULL, 1, a.streetname REGEXP _street) AND
-      IF(_city IS NULL, 1, a.city  REGEXP _city) AND
+      IF(_street IS NULL, 1, yp.strip_accents(a.streetname) REGEXP _street) AND
+      IF(_city IS NULL, 1, yp.strip_accents(a.city) REGEXP _city) AND
       IF(_postcode IS NULL, 1, a.postcode REGEXP _postcode) AND 
       IF(_custId IS NULL, 1, w.custId=_custId) AND 
       IF(_siteId IS NULL, 1, q.siteId=_siteId) AND
       IF(_year REGEXP "^ *([0-9]{4,4}) *$", fiscalYear=_year, 1) AND
-      IF(_description IS NULL, 1, yp.strip_accents(q.description) REGEXP yp.strip_accents(_description)) AND
+      IF(_description IS NULL, 1, (yp.strip_accents(q.description) REGEXP _description) OR (yp.strip_accents(w.description) REGEXP _description)) AND
       IF(_chrono IS NULL, 1, q.chrono REGEXP _chrono) AND
       IF(_addressId IS NULL, 1, a.id=_addressId) 
     ORDER BY q.ctime DESC

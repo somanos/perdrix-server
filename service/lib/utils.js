@@ -158,7 +158,7 @@ async function _search_location(words) {
       let { features } = data || {};
       resolve(features);
     }).catch((e) => {
-      this.warn("Failed to get data from ", { words, url }, e.statusMessage);
+      this.warn("Failed to get data from ", { words, url }, e.code);
       resolve([]);
     });
   })
